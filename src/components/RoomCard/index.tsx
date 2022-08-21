@@ -14,6 +14,7 @@ interface Props {
   price: string;
   expenses: boolean;
   free: boolean;
+  preview?: boolean;
 }
 
 interface PropsBtn {
@@ -45,6 +46,7 @@ const RoomCard: React.FC<Props> = ({
   share_id,
   title,
   free,
+  preview,
 }) => {
   const [image, setImage] = useState(images[0]);
   const [index, setIndex] = useState(0);
@@ -65,7 +67,7 @@ const RoomCard: React.FC<Props> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3 ">
+    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
       <div className="grid col-span-1 rounded-lg relative">
         {image && (
           <Image
@@ -84,7 +86,7 @@ const RoomCard: React.FC<Props> = ({
           &gt;
         </ButtonImage>
       </div>
-      <div className="grid col-span-2 py-2">
+      <div className="grid col-span-2 py-2 pointer-events-none">
         <div className="flex flex-col justify-between items-start">
           <div className="cursor-pointer">
             <div>

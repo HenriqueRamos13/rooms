@@ -1,13 +1,48 @@
-import type { NextPage, NextPageContext } from "next";
+import type { GetStaticPropsContext, NextPage, NextPageContext } from "next";
+import Head from "next/head";
 import { FormEvent } from "react";
-import Content from "../src/components/Contents/DefaultContent/Content";
-import FullWContent from "../src/components/Contents/DefaultContent/FullWContent";
-import LeftContent from "../src/components/Contents/DefaultContent/LeftContent";
-import ParentDefaultContent from "../src/components/Contents/DefaultContent/ParentDefaultContent";
-import RightContent from "../src/components/Contents/DefaultContent/RightContent";
-import RoomCard from "../src/components/RoomCard";
+import Content from "../../src/components/Contents/DefaultContent/Content";
+import FullWContent from "../../src/components/Contents/DefaultContent/FullWContent";
+import LeftContent from "../../src/components/Contents/DefaultContent/LeftContent";
+import ParentDefaultContent from "../../src/components/Contents/DefaultContent/ParentDefaultContent";
+import RightContent from "../../src/components/Contents/DefaultContent/RightContent";
+import RoomCard from "../../src/components/RoomCard";
+import { COUNTRIES } from "../../src/utils/Countries";
 
-export async function getServerSideProps(context: NextPageContext) {
+export async function getStaticPaths(context: NextPageContext) {
+  const paths = Object.keys(COUNTRIES.Portugal).map((district) => {
+    const paths = (COUNTRIES.Portugal as any)[district].map((hall: string) => {
+      return {
+        params: {
+          district: district.toLowerCase().replace(/ /g, "-"),
+          hall: hall.toLowerCase().replace(/ /g, "-"),
+        },
+      };
+    });
+    return paths;
+  });
+
+  const finalPaths: any[] = [];
+
+  paths.map((e) => finalPaths.push(...e));
+
+  return {
+    paths: finalPaths,
+    fallback: false,
+  };
+}
+
+type PageParams = {
+  district: string;
+  hall: string;
+};
+
+export async function getStaticProps({
+  params,
+}: GetStaticPropsContext<PageParams>) {
+  const district = params?.district;
+  const hall = params?.hall;
+
   const room = {
     images: ["/quarto.jpeg", "/quarto2.jpeg"],
     title: "Rua da Saudade 79A - Covilhã, Portugal",
@@ -25,6 +60,11 @@ export async function getServerSideProps(context: NextPageContext) {
   return {
     props: {
       rooms,
+      title:
+        "Quartos em " +
+        hall?.replace("-", " ") +
+        " - " +
+        district?.replace("-", " "),
     },
   };
 }
@@ -42,9 +82,10 @@ interface Room {
 
 interface Props {
   rooms: Room[];
+  title: string;
 }
 
-const Home: NextPage<Props> = ({ rooms }) => {
+const SEOFind: NextPage<Props> = ({ rooms, title }) => {
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -65,9 +106,12 @@ const Home: NextPage<Props> = ({ rooms }) => {
 
   return (
     <>
+      <Head>
+        <title>{title}</title>
+      </Head>
       <ParentDefaultContent>
         <FullWContent>
-          <Content title={`Quartos em Covilhã - Castelo Branco`} boldTitle h1>
+          <Content title={title} boldTitle h1>
             <>
               <p>fdgsdgsfg</p>
               <br></br>
@@ -142,4 +186,4 @@ const Home: NextPage<Props> = ({ rooms }) => {
   );
 };
 
-export default Home;
+export default SEOFind;

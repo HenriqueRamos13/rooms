@@ -1,21 +1,15 @@
-import { Fragment, useState } from "react";
+import { FormEvent, Fragment, useState } from "react";
 import { Menu, Popover, Transition } from "@headlessui/react";
 import { BellIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
-import { SearchIcon } from "@heroicons/react/solid";
+import { CollectionIcon, SearchIcon } from "@heroicons/react/solid";
 import { classNames } from "../../utils/classNames";
 import { useRouter } from "next/router";
-
-const user = {
-  name: "Tom Cook",
-  email: "tom@example.com",
-  imageUrl:
-    "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80",
-};
+import { useAuth } from "../../utils/contexts/Auth";
+import { ToastContainer, toast } from "react-toastify";
 
 const userNavigation = [
-  { name: "Your Profile", href: "#" },
-  { name: "Settings", href: "#" },
-  { name: "Sign out", href: "#" },
+  { name: "Meus Quartos", href: "#" },
+  // { name: "Settings", href: "#" },
 ];
 
 interface Props {
@@ -31,14 +25,64 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
     }[]
   >([
     { name: "Encontrar Quartos", href: "/", current: true },
-    { name: "Sobre nós", href: "sobre", current: false },
-    { name: "Quero publicar um quarto", href: "publicar", current: false },
+    { name: "Sobre nós", href: "/sobre", current: false },
+    { name: "Quero publicar um quarto", href: "/publicar", current: false },
   ]);
 
   const router = useRouter();
+  const { login, logout, user } = useAuth();
+  const [modal, setModal] = useState<any>(false);
+
+  const onLogin = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = new FormData(e.target as HTMLFormElement);
+    const formData = Object.fromEntries(form.entries());
+
+    login(formData)
+      .then(() => {
+        toast("Verifique seu e-mail para iniciar a sessão.", {
+          type: "success",
+        });
+      })
+      .catch((message) => {
+        toast(message, {
+          type: "error",
+        });
+      });
+  };
+
+  const onRegister = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = new FormData(e.target as HTMLFormElement);
+    const formData = Object.fromEntries(form.entries());
+
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        formData,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.success) {
+      toast("Verifique seu e-mail para confirmar a conta.", {
+        type: "success",
+      });
+    } else {
+      toast(data.message, {
+        type: "error",
+      });
+    }
+  };
 
   const handleRoute = (route: string) => {
-    router.push(route);
+    router.replace(route);
     setNavigation(
       Object.assign(
         [],
@@ -77,51 +121,69 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
 
                   {/* Right section on desktop */}
                   <div className="hidden lg:ml-4 lg:flex lg:items-center lg:pr-0.5">
-                    <button
-                      type="button"
-                      className="flex-shrink-0 p-1 text-indigo-200 rounded-full hover:text-white hover:bg-white hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-white"
-                    >
-                      <span className="sr-only">View notifications</span>
-                      <BellIcon className="h-6 w-6" aria-hidden="true" />
-                    </button>
-
                     {/* Profile dropdown */}
-                    <Menu as="div" className="ml-4 relative flex-shrink-0">
-                      <div>
-                        <Menu.Button className="bg-white rounded-full flex text-sm ring-2 ring-white ring-opacity-20 focus:outline-none focus:ring-opacity-100">
-                          <span className="sr-only">Open user menu</span>
-                          <img
-                            className="h-8 w-8 rounded-full"
-                            src={user.imageUrl}
-                            alt=""
-                          />
-                        </Menu.Button>
-                      </div>
-                      <Transition
-                        as={Fragment}
-                        leave="transition ease-in duration-75"
-                        leaveFrom="transform opacity-100 scale-100"
-                        leaveTo="transform opacity-0 scale-95"
-                      >
-                        <Menu.Items className="origin-top-right z-40 absolute -right-2 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                          {userNavigation.map((item) => (
-                            <Menu.Item key={item.name}>
-                              {({ active }) => (
-                                <a
-                                  href={item.href}
-                                  className={classNames(
-                                    active ? "bg-gray-100" : "",
-                                    "block px-4 py-2 text-sm text-gray-700"
-                                  )}
-                                >
-                                  {item.name}
-                                </a>
-                              )}
+                    {user ? (
+                      <Menu as="div" className="ml-4 relative flex-shrink-0">
+                        <div className="grid grid-cols-2 gap-4">
+                          <p className="text-gray-300">Olá, {user.name}</p>
+                          <Menu.Button>
+                            <CollectionIcon
+                              width={24}
+                              height={24}
+                              className="text-gray-300"
+                            />
+                          </Menu.Button>
+                        </div>
+                        <Transition
+                          as={Fragment}
+                          leave="transition ease-in duration-75"
+                          leaveFrom="transform opacity-100 scale-100"
+                          leaveTo="transform opacity-0 scale-95"
+                        >
+                          <Menu.Items className="origin-top-right z-40 absolute -right-2 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                            {userNavigation.map((item) => (
+                              <Menu.Item key={item.name}>
+                                {({ active }) => (
+                                  <p
+                                    key={item.name}
+                                    onClick={() => handleRoute(item.href)}
+                                    className={classNames(
+                                      active ? "bg-gray-100" : "",
+                                      "block px-4 py-2 text-sm text-gray-700 cursor-pointer"
+                                    )}
+                                  >
+                                    {item.name}
+                                  </p>
+                                )}
+                              </Menu.Item>
+                            ))}
+                            <Menu.Item>
+                              <button
+                                onClick={() => logout()}
+                                className="ml-2 block rounded-md px-3 py-2 text-base text-red-400 font-medium hover:bg-gray-100 hover:text-gray-800"
+                              >
+                                Encerrar Sessão
+                              </button>
                             </Menu.Item>
-                          ))}
-                        </Menu.Items>
-                      </Transition>
-                    </Menu>
+                          </Menu.Items>
+                        </Transition>
+                      </Menu>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-4 px-4">
+                        <button
+                          onClick={() => setModal({ type: "Registro" })}
+                          className="btn btn-ghost text-gray-200"
+                        >
+                          Criar Conta
+                        </button>
+                        <button
+                          onClick={() => setModal({ type: "Login" })}
+                          className="btn btn-secondary"
+                        >
+                          Iniciar Sessão
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Search */}
@@ -262,46 +324,51 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
                           </div>
                         </div>
                         <div className="pt-4 pb-2">
-                          <div className="flex items-center px-5">
-                            <div className="flex-shrink-0">
-                              <img
-                                className="h-10 w-10 rounded-full"
-                                src={user.imageUrl}
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-3 min-w-0 flex-1">
-                              <div className="text-base font-medium text-gray-800 truncate">
-                                {user.name}
+                          {user ? (
+                            <>
+                              <div className="flex items-center px-5">
+                                <div className="ml-3 min-w-0 flex-1">
+                                  <div className="text-base font-medium text-gray-800 truncate">
+                                    <p className="text-gray-800">
+                                      Olá, {user.name}
+                                    </p>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="text-sm font-medium text-gray-500 truncate">
-                                {user.email}
-                              </div>
-                            </div>
-                            <button
-                              type="button"
-                              className="ml-auto flex-shrink-0 bg-white p-1 text-gray-400 rounded-full hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                            >
-                              <span className="sr-only">
-                                View notifications
-                              </span>
-                              <BellIcon
-                                className="h-6 w-6"
-                                aria-hidden="true"
-                              />
-                            </button>
-                          </div>
-                          <div className="mt-3 px-2 space-y-1">
-                            {userNavigation.map((item) => (
-                              <a
-                                key={item.name}
-                                href={item.href}
-                                className="block rounded-md px-3 py-2 text-base text-gray-900 font-medium hover:bg-gray-100 hover:text-gray-800"
+                              <div className="mt-3 px-2 space-y-1">
+                                {userNavigation.map((item) => (
+                                  <p
+                                    key={item.name}
+                                    onClick={() => handleRoute(item.href)}
+                                    className="cursor-pointer block rounded-md px-3 py-2 text-base text-gray-900 font-medium hover:bg-gray-100 hover:text-gray-800"
+                                  >
+                                    {item.name}
+                                  </p>
+                                ))}
+                                <button
+                                  onClick={() => logout()}
+                                  className="block rounded-md px-3 py-2 text-base text-red-400 font-medium hover:bg-gray-100 hover:text-gray-800"
+                                >
+                                  Encerrar Sessão
+                                </button>
+                              </div>{" "}
+                            </>
+                          ) : (
+                            <div className="grid grid-cols-2 gap-4 px-4">
+                              <button
+                                onClick={() => setModal({ type: "Registro" })}
+                                className="btn btn-ghost text-gray-200"
                               >
-                                {item.name}
-                              </a>
-                            ))}
-                          </div>
+                                Criar Conta
+                              </button>
+                              <button
+                                onClick={() => setModal({ type: "Login" })}
+                                className="btn btn-secondary"
+                              >
+                                Iniciar Sessão
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </Popover.Panel>
@@ -326,6 +393,47 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
             </div>
           </div>
         </footer>
+      </div>
+
+      <div className={classNames("modal", modal ? "modal-open" : "")}>
+        <div className="modal-box relative">
+          <label
+            htmlFor="my-modal-3"
+            className="btn btn-sm btn-circle absolute right-2 top-2"
+            onClick={() => setModal(null)}
+          >
+            ✕
+          </label>
+          <h3 className="text-3xl font-bold">{modal?.type || ""}</h3>
+          <form onSubmit={modal?.type === "Login" ? onLogin : onRegister}>
+            <div className="form-control">
+              <label className="label">
+                <span className="label-text">Email</span>
+              </label>
+              <input
+                type="text"
+                placeholder="email"
+                className="input input-bordered"
+              />
+            </div>
+            <p className="mt-4">
+              {modal?.type === "Login"
+                ? "Um e-mail com a url de acesso será enviado para você."
+                : modal?.type === "Registro"
+                ? "Por segurança, não pedimos senha. Apenas e-mail, sempre que fizer login um e-mail com a url de acesso será enviado para você."
+                : ""}
+            </p>
+            <div className="form-control mt-6">
+              <button className="btn btn-primary">
+                {modal?.type === "Login"
+                  ? "Iniciar Sessão"
+                  : modal?.type === "Registro"
+                  ? "Efetuar Registro"
+                  : ""}
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </>
   );

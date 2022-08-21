@@ -7,15 +7,21 @@ import React, {
 } from "react";
 
 export interface AuthContextInterface {
-  user: any;
+  user: { name: string } | null;
+  token: string | null;
   setUser: (value: any) => void;
-  login: (email: string, password: string) => void;
+  setToken: (value: any) => void;
+  login(body: any): Promise<any>;
+  logout: () => void;
 }
 
 export const authContextDefaults: AuthContextInterface = {
   user: null,
+  token: null,
   setUser: () => {},
-  login: () => {},
+  setToken: () => {},
+  login: async () => {},
+  logout: () => {},
 };
 
 export const AuthContext =
@@ -26,9 +32,37 @@ interface Props {
 }
 
 export function AuthProvider({ children }: Props) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<{ name: string; number: string } | null>(
+    null
+  );
+  const [token, setToken] = useState<string | null>(null);
 
-  const login = async (email: string, password: string) => {};
+  const logout = () => {
+    setUser(null);
+    setToken(null);
+
+    window.localStorage.removeItem("@user");
+    window.localStorage.removeItem("@token");
+  };
+
+  const login = async (body: any) =>
+    await new Promise<void>(async (resolve, reject) => {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          body,
+        }),
+      });
+
+      const data = await res.json();
+      if (data.success) {
+        resolve();
+      }
+      reject(data.message || "Erro ao fazer login");
+    });
 
   useEffect(() => {
     if (user) {
@@ -41,24 +75,27 @@ export function AuthProvider({ children }: Props) {
   }, [user]);
 
   useEffect(() => {
-    // try {
-    //   if (location.search.includes("verified")) {
-    //     logout();
-    //     setCheckingSession(false);
-    //   } else if (
-    //     location.search.includes("recovery_token") &&
-    //     location.search.includes("recoveryStep")
-    //   ) {
-    //     setCheckingSession(false);
-    //     navigate("/" + location.search, { replace: true });
-    //   } else {
-    //     handleAuthentication();
-    //   }
-    // } catch (error) {
-    //   setIsAuthenticated(false);
-    //   setCheckingSession(false);
-    //   navigate("/", { replace: true });
-    // }
+    if (token) {
+      try {
+        window.localStorage.setItem("@token", token);
+      } catch (error) {
+        window.localStorage.setItem("@token", token);
+      }
+    }
+  }, [token]);
+
+  const handleAuthentication = async () => {
+    const token = window.localStorage.getItem("@token");
+    const user = window.localStorage.getItem("@user");
+
+    if (token && user) {
+      setUser(JSON.parse(user));
+      setToken(token);
+    }
+  };
+
+  useEffect(() => {
+    handleAuthentication();
   }, []);
 
   return (
@@ -66,8 +103,11 @@ export function AuthProvider({ children }: Props) {
       value={
         {
           login,
+          logout,
           user,
+          token,
           setUser,
+          setToken,
         } as AuthContextInterface
       }
     >

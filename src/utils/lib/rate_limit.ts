@@ -30,7 +30,11 @@ export default function rateLimit(options?: Options) {
         );
 
         return isRateLimited
-          ? reject({ status: 429, message: "AAAAA" })
+          ? reject({
+              status: 429,
+              message:
+                "Muitas tentativas. Espere 1 minuto para tentar novamente.",
+            })
           : resolve();
       }),
   };

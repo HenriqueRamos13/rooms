@@ -1,6 +1,7 @@
 import { NextApiRequest, NextApiResponse } from "next";
 import getIp from "../../../src/utils/get_ip";
 import rateLimit from "../../../src/utils/lib/rate_limit";
+import * as jwt from "jsonwebtoken";
 
 const limiter = rateLimit({
   interval: 60 * 1000, // 60 seconds
@@ -15,14 +16,16 @@ export default async function handler(
     try {
       const ip = getIp(req);
       await limiter.check(res, 2, ip);
-      console.log("AAAAAAAAAAAA", ip);
       const {
         body: { email },
       } = req;
-      res.status(200).json({ email, ip });
-    } catch (error) {
-      console.log(error);
-      res.status(429).json({ error: "Rate limit exceeded" });
+      res.status(200).json({
+        success: true,
+      });
+    } catch (error: any) {
+      res
+        .status(error.status || 401)
+        .json({ message: error?.message || "Error" });
     }
   }
 }
