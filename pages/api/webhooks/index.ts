@@ -1,7 +1,7 @@
 import { buffer } from "micro";
 import Cors from "micro-cors";
 import { NextApiRequest, NextApiResponse } from "next";
-import { prisma } from "../../../src/utils/db";
+// import { prisma } from "../../../src/utils/db";
 import Stripe from "stripe";
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
@@ -66,45 +66,41 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       const { status } = sessionSuccess;
 
       if (status === "complete") {
-        const { job_id, coupon } = sessionSuccess.metadata as any;
-
-        const { user } = await prisma.job.update({
-          where: { id: job_id },
-          data: { payed: true },
-          include: {
-            user: true,
-          },
-        });
-
-        if (coupon) {
-          const couponData = await prisma.coupon.findFirst({
-            where: { code: coupon },
-          });
-
-          const exist = await prisma.usersOnCoupons.findFirst({
-            where: {
-              user: { id: user!.id },
-              coupon: { id: couponData!.id },
-            },
-          });
-
-          if (!exist) {
-            await prisma.usersOnCoupons.create({
-              data: {
-                user: {
-                  connect: {
-                    id: user!.id,
-                  },
-                },
-                coupon: {
-                  connect: {
-                    id: couponData!.id,
-                  },
-                },
-              },
-            });
-          }
-        }
+        // const { job_id, coupon } = sessionSuccess.metadata as any;
+        // const { user } = await prisma.job.update({
+        //   where: { id: job_id },
+        //   data: { payed: true },
+        //   include: {
+        //     user: true,
+        //   },
+        // });
+        // if (coupon) {
+        //   const couponData = await prisma.coupon.findFirst({
+        //     where: { code: coupon },
+        //   });
+        //   const exist = await prisma.usersOnCoupons.findFirst({
+        //     where: {
+        //       user: { id: user!.id },
+        //       coupon: { id: couponData!.id },
+        //     },
+        //   });
+        //   if (!exist) {
+        //     await prisma.usersOnCoupons.create({
+        //       data: {
+        //         user: {
+        //           connect: {
+        //             id: user!.id,
+        //           },
+        //         },
+        //         coupon: {
+        //           connect: {
+        //             id: couponData!.id,
+        //           },
+        //         },
+        //       },
+        //     });
+        //   }
+        // }
       }
 
       console.log("💰 PaymentIntent: " + JSON.stringify(sessionSuccess));
