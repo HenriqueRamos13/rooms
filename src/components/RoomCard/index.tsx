@@ -67,7 +67,7 @@ const RoomCard: React.FC<Props> = ({
   };
 
   return (
-    <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+    <div className="grid grid-cols-1 gap-1 md:gap-4 md:grid-cols-3">
       <div className="grid col-span-1 rounded-lg relative">
         {image && (
           <Image
@@ -86,7 +86,12 @@ const RoomCard: React.FC<Props> = ({
           &gt;
         </ButtonImage>
       </div>
-      <div className="grid col-span-2 py-2 pointer-events-none">
+      <div
+        className={classNames(
+          "grid col-span-2 py-2",
+          preview ? "pointer-events-none" : ""
+        )}
+      >
         <div className="flex flex-col justify-between items-start">
           <div className="cursor-pointer">
             <div>
@@ -94,7 +99,7 @@ const RoomCard: React.FC<Props> = ({
               <Divider />
             </div>
 
-            <p className="text-sm mb-2">{description}</p>
+            <p className="text-sm mb-2">{description.slice(0, 161)}</p>
             <div className="w-full flex flex-row items-center">
               <b className="font-bold text-black mr-2">Status: </b>
               {free ? (
@@ -111,9 +116,9 @@ const RoomCard: React.FC<Props> = ({
           </div>
           <div className="w-full flex flex-row items-center justify-between">
             <div className="flex flex-row">
-              <button className="border rounded-md p-2">
+              {/* <button className="border rounded-md p-2">
                 <HeartIcon width={30} height={30} />
-              </button>
+              </button> */}
               <div className="w-[6px]"></div>
               <button className="border rounded-md p-2">
                 <ShareIcon width={30} height={30} />

@@ -16,27 +16,55 @@ import { COUNTRIES } from "../../src/utils/Countries";
 import UploadFiles from "../../src/components/UploadFiles";
 import Checkbox from "../../src/components/Checkbox";
 import TextArea from "../../src/components/TextArea";
+import { BENEFITS } from "../../src/utils/benefits";
+import { prisma } from "../../src/utils/lib/prisma";
 
 export async function getServerSideProps(context: NextPageContext) {
   const {
     query: { token },
   } = context;
 
-  if (token) {
+  const user = await prisma.user.findFirst({
+    where: {
+      access_token: token as string,
+    },
+  });
+
+  if (!user) {
     return {
-      props: {
-        token: jwt.sign({}, process.env.JWT as string, {
-          expiresIn: "30d",
-        }),
-        user: {
-          name: "John Doe",
-        },
-      },
+      props: {},
     };
   }
 
+  if (new Date(user?.token_expires as Date).getTime() < new Date().getTime()) {
+    return {
+      props: {},
+    };
+  }
+
+  await prisma.user.update({
+    where: {
+      id: user.id,
+    },
+    data: {
+      token_expires: null,
+      access_token: null,
+    },
+  });
+
   return {
-    props: {},
+    props: {
+      token: jwt.sign(
+        { id: user.id, role: user.role },
+        process.env.JWT as string,
+        {
+          expiresIn: "30d",
+        }
+      ),
+      user: {
+        name: user.name,
+      },
+    },
   };
 }
 
@@ -83,80 +111,12 @@ interface Props {
   token?: string;
 }
 
-const BENEFITS = [
-  {
-    id: "1",
-    name: "📶  Wi-Fi",
-  },
-  {
-    id: "2",
-    name: "🛀🏻  Banheira",
-  },
-  {
-    id: "3",
-    name: "👩🏼‍🔬  Limpeza incluída",
-  },
-  {
-    id: "4",
-    name: "🖥 TV",
-  },
-  {
-    id: "5",
-    name: "🧯  Extintor",
-  },
-  {
-    id: "6",
-    name: "🛗  Elevador",
-  },
-  {
-    id: "7",
-    name: "🏋️‍♂️  Perto de academia",
-  },
-  {
-    id: "8",
-    name: "🍻  Perto de bares",
-  },
-  {
-    id: "9",
-    name: "🍽  Possui talheres",
-  },
-  {
-    id: "10",
-    name: "🐶 Pet Friendly",
-  },
-  {
-    id: "11",
-    name: "🚊  Perto de metro",
-  },
-  {
-    id: "12",
-    name: "🚌  Perto de ônibus",
-  },
-  {
-    id: "13",
-    name: "🏬  Perto de supermercado",
-  },
-  {
-    id: "14",
-    name: "🧱 Mobilias",
-  },
-  {
-    id: "15",
-    name: "🚭 Não pode fumar",
-  },
-  {
-    id: "16",
-    name: "🚬 Pode fumar",
-  },
-];
-
 const PostRoom: NextPage<Props> = ({ user, token }) => {
   const [houseImages, setHouseImages] = useState<any[]>([]);
   const [roomImages, setRoomImages] = useState<any[]>([]);
   const [home_name, setHome_name] = useState("");
   const [country, setCountry] = useState("Portugal");
   const [city, setCity] = useState("");
-  const [address, setAddress] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [street, setStreet] = useState("");
   const [benefits, setBenefits] = useState<string[]>([]);
@@ -321,40 +281,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                           description="Rua/Av. em que a casa está localizada. Pode conter o número da casa também."
                         />
                         <div />
-                        <div className="col-span-full">
-                          <div className="grid gap-2 grid-cols-5">
-                            <h2 className="text-gray-800 text-xl col-span-full">
-                              Diferenciais:
-                            </h2>
-                            {BENEFITS.map((e) => (
-                              <div
-                                key={e.id}
-                                className={classNames(
-                                  "badge cursor-pointer",
-                                  benefits.indexOf(e.id) > -1
-                                    ? "badge-success"
-                                    : ""
-                                )}
-                                onClick={() => {
-                                  if (benefits.indexOf(e.id) > -1) {
-                                    setBenefits(
-                                      Object.assign(
-                                        [],
-                                        [...benefits.filter((f) => f !== e.id)]
-                                      )
-                                    );
-                                  } else {
-                                    setBenefits(
-                                      Object.assign([], [...benefits, e.id])
-                                    );
-                                  }
-                                }}
-                              >
-                                {e.name}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
+
                         <UploadFiles
                           setImages={(e) =>
                             setHouseImages(Object.assign([], [...e]))
@@ -419,10 +346,57 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                         <Checkbox
                           checked={expenses}
                           label="Despesas incluídas?"
-                          onChange={() => setExpenses(!expenses)}
+                          onChange={() => {
+                            if (expenses) {
+                              setBenefits(
+                                Object.assign([], [...benefits, "26"])
+                              );
+                            } else {
+                              setBenefits(
+                                Object.assign(
+                                  [],
+                                  [...benefits.filter((f) => f !== "26")]
+                                )
+                              );
+                            }
+                            setExpenses(!expenses);
+                          }}
                         />
                         <div />
-
+                        <div className="col-span-full">
+                          <div className="grid gap-2 grid-cols-1 md:grid-cols-3 lg:grid-cols-5">
+                            <h2 className="text-gray-800 text-xl col-span-full">
+                              Diferenciais:
+                            </h2>
+                            {BENEFITS.map((e) => (
+                              <div
+                                key={e.id}
+                                className={classNames(
+                                  "badge cursor-pointer badge-lg",
+                                  benefits.indexOf(e.id) > -1
+                                    ? "badge-success"
+                                    : ""
+                                )}
+                                onClick={() => {
+                                  if (benefits.indexOf(e.id) > -1) {
+                                    setBenefits(
+                                      Object.assign(
+                                        [],
+                                        [...benefits.filter((f) => f !== e.id)]
+                                      )
+                                    );
+                                  } else {
+                                    setBenefits(
+                                      Object.assign([], [...benefits, e.id])
+                                    );
+                                  }
+                                }}
+                              >
+                                {e.name}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                         <UploadFiles
                           setImages={(e) =>
                             setRoomImages(Object.assign([], [...e]))
@@ -508,10 +482,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
               )}
 
               <button
-                // disabled={
-                //   (step === 0 && !userContext) || step === steps.length - 1
-                // }
                 disabled={
+                  (step === 0 && !userContext) ||
                   step === steps.length - 1 ||
                   (step === 2 &&
                     (roomImages.length === 0 ||
@@ -519,6 +491,14 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                       street.trim().length === 0 ||
                       room_price <= 0))
                 }
+                // disabled={
+                //   step === steps.length - 1 ||
+                //   (step === 2 &&
+                //     (roomImages.length === 0 ||
+                //       houseImages.length === 0 ||
+                //       street.trim().length === 0 ||
+                //       room_price <= 0))
+                // }
                 onClick={() => handleStep(1)}
                 className="btn btn-primary"
               >

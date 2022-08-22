@@ -6,7 +6,7 @@ interface Props {
 const WhatsappButton: React.FC<Props> = ({ number, url }) => {
   return (
     <a
-      className="btn btn-success"
+      className="btn btn-success text-white"
       href={`https://wa.me/${number}?text=Olá estou interessado neste quarto! ${url}.`}
       target="_blank"
       rel="noreferrer noopener nofollow"

@@ -44,6 +44,8 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
         toast("Verifique seu e-mail para iniciar a sessão.", {
           type: "success",
         });
+
+        setModal(false);
       })
       .catch((message) => {
         toast(message, {
@@ -63,9 +65,7 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({
-        formData,
-      }),
+      body: JSON.stringify(formData),
     });
 
     const data = await res.json();
@@ -74,6 +74,8 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
       toast("Verifique seu e-mail para confirmar a conta.", {
         type: "success",
       });
+
+      setModal(false);
     } else {
       toast(data.message, {
         type: "error",
@@ -412,10 +414,24 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
               </label>
               <input
                 type="text"
-                placeholder="email"
+                placeholder="Email"
+                name="email"
                 className="input input-bordered"
               />
             </div>
+            {modal?.type === "Registro" && (
+              <div className="form-control">
+                <label className="label">
+                  <span className="label-text">Nome</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="Nome"
+                  name="name"
+                  className="input input-bordered"
+                />
+              </div>
+            )}
             <p className="mt-4">
               {modal?.type === "Login"
                 ? "Um e-mail com a url de acesso será enviado para você."
@@ -424,7 +440,7 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
                 : ""}
             </p>
             <div className="form-control mt-6">
-              <button className="btn btn-primary">
+              <button className="btn btn-primary" type="submit">
                 {modal?.type === "Login"
                   ? "Iniciar Sessão"
                   : modal?.type === "Registro"

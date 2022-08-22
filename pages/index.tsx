@@ -1,11 +1,15 @@
 import type { NextPage, NextPageContext } from "next";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import Content from "../src/components/Contents/DefaultContent/Content";
 import FullWContent from "../src/components/Contents/DefaultContent/FullWContent";
 import LeftContent from "../src/components/Contents/DefaultContent/LeftContent";
 import ParentDefaultContent from "../src/components/Contents/DefaultContent/ParentDefaultContent";
 import RightContent from "../src/components/Contents/DefaultContent/RightContent";
 import RoomCard from "../src/components/RoomCard";
+import Select from "../src/components/Select";
+import { BENEFITS } from "../src/utils/benefits";
+import { classNames } from "../src/utils/classNames";
+import { COUNTRIES } from "../src/utils/Countries";
 
 export async function getServerSideProps(context: NextPageContext) {
   const room = {
@@ -44,7 +48,12 @@ interface Props {
   rooms: Room[];
 }
 
-const Home: NextPage<Props> = ({ rooms }) => {
+const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
+  const [rooms, setRooms] = useState(serverRooms || []);
+  const [city, setCity] = useState("");
+  const [neighborhood, setNeighborhood] = useState("");
+  const [benefits, setBenefits] = useState<string[]>([]);
+
   const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
@@ -67,28 +76,70 @@ const Home: NextPage<Props> = ({ rooms }) => {
     <>
       <ParentDefaultContent>
         <FullWContent>
-          <Content title={`Quartos em Covilhã - Castelo Branco`} boldTitle h1>
-            <>
-              <p>fdgsdgsfg</p>
-              <br></br>
-              <p>fdgsdgsfg</p>
-              <br></br>
-              <p>fdgsdgsfg</p>
-              <br></br>
-            </>
+          <Content
+            title={`Procurar quartos para arrendar em Portugal`}
+            boldTitle
+            h1
+          >
+            <div className="w-full grid grid-cols-1 gap-4 md:grid-cols-3">
+              <Select
+                label="Distrito"
+                onChange={(v) => setCity(v)}
+                value={city}
+              >
+                <option value="">Selecione um distrito</option>
+                {Object.keys(COUNTRIES.Portugal).map((e) => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </Select>
+              <Select
+                label="Região/Bairro/Concelho"
+                onChange={(v) => setNeighborhood(v)}
+                value={neighborhood}
+              >
+                <option value="">Selecione uma região</option>
+                {(COUNTRIES.Portugal as any)[city]?.map((e: string) => (
+                  <option key={e} value={e}>
+                    {e}
+                  </option>
+                ))}
+              </Select>
+              <Select label="País" onChange={(v) => {}} value="Portugal">
+                <option value="Portugal">Portugal</option>
+              </Select>
+            </div>
           </Content>
         </FullWContent>
         <div className="block lg:hidden">
           <FullWContent>
             <Content title="Filtros" boldTitle>
-              <>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-              </>
+              <div className="columns-auto">
+                {BENEFITS.map((e) => (
+                  <div
+                    key={e.id}
+                    className={classNames(
+                      "badge cursor-pointer mx-2 my-2 badge-lg",
+                      benefits.indexOf(e.id) > -1 ? "badge-success" : ""
+                    )}
+                    onClick={() => {
+                      if (benefits.indexOf(e.id) > -1) {
+                        setBenefits(
+                          Object.assign(
+                            [],
+                            [...benefits.filter((f) => f !== e.id)]
+                          )
+                        );
+                      } else {
+                        setBenefits(Object.assign([], [...benefits, e.id]));
+                      }
+                    }}
+                  >
+                    {e.name}
+                  </div>
+                ))}
+              </div>
             </Content>
           </FullWContent>
         </div>
@@ -103,32 +154,31 @@ const Home: NextPage<Props> = ({ rooms }) => {
         <div className="hidden lg:block">
           <RightContent>
             <Content title="Filtros">
-              <>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-                <p>fdgsdgsfg</p>
-                <br></br>
-              </>
+              <div className="columns-auto">
+                {BENEFITS.map((e) => (
+                  <div
+                    key={e.id}
+                    className={classNames(
+                      "badge cursor-pointer mx-2 my-2 badge-lg",
+                      benefits.indexOf(e.id) > -1 ? "badge-success" : ""
+                    )}
+                    onClick={() => {
+                      if (benefits.indexOf(e.id) > -1) {
+                        setBenefits(
+                          Object.assign(
+                            [],
+                            [...benefits.filter((f) => f !== e.id)]
+                          )
+                        );
+                      } else {
+                        setBenefits(Object.assign([], [...benefits, e.id]));
+                      }
+                    }}
+                  >
+                    {e.name}
+                  </div>
+                ))}
+              </div>
             </Content>
           </RightContent>
         </div>
