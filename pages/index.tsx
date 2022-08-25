@@ -1,5 +1,5 @@
 import type { NextPage, NextPageContext } from "next";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import Content from "../src/components/Contents/DefaultContent/Content";
 import FullWContent from "../src/components/Contents/DefaultContent/FullWContent";
 import LeftContent from "../src/components/Contents/DefaultContent/LeftContent";
@@ -32,25 +32,44 @@ export async function getServerSideProps(context: NextPageContext) {
       can_post: true,
     },
     include: {
-      house: true,
+      house: {
+        include: {
+          images: true,
+        },
+      },
+      images: true,
     },
     orderBy: {
       created_at: "desc",
     },
+    take: 100,
   });
 
   return {
     props: {
-      rooms,
+      rooms: rooms.map((room) => ({
+        images: room.house.images
+          .map((image) => image.url)
+          .concat(room.house.images.map((image) => image.url)),
+        title: room.title,
+        description: room.description,
+        price: Number(room.price),
+        url: room.url,
+        free: room.free,
+        expenses: room.expenses,
+        number: room.number,
+        whatsapp: room.whatsapp,
+      })),
     },
   };
 }
 
-interface Room {
+export interface RoomInterface {
   images: string[];
   title: string;
   description: string;
   number: string;
+  whatsapp: string;
   url: string;
   price: string;
   free: boolean;
@@ -58,7 +77,7 @@ interface Room {
 }
 
 interface Props {
-  rooms: Room[];
+  rooms: RoomInterface[];
 }
 
 const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
@@ -66,6 +85,48 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [benefits, setBenefits] = useState<string[]>([]);
+
+  const getRooms = async () => {
+    const res = await fetch("/api/room/search", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        ...(city && { city }),
+        ...(neighborhood && { neighborhood }),
+        // ...(benefits.length > 0 && { benefits }),
+        benefits,
+      }),
+    });
+
+    const data = await res.json();
+
+    if (data.rooms) {
+      setRooms(Object.assign([], [...data.rooms]));
+    }
+  };
+
+  useEffect(() => {
+    if (city !== "") {
+      getRooms();
+    }
+  }, [city]);
+
+  useEffect(() => {
+    if (neighborhood !== "") {
+      getRooms();
+    }
+  }, [neighborhood]);
+
+  useEffect(() => {
+    if (benefits) {
+      if (city === "" && neighborhood === "" && benefits.length === 0) {
+      } else {
+        getRooms();
+      }
+    }
+  }, [benefits]);
 
   // const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
   //   e.preventDefault();
@@ -158,6 +219,7 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
         </div>
         <LeftContent>
           {rooms &&
+            rooms.length > 0 &&
             rooms.map((room) => (
               <Content key={room.url!}>
                 <RoomCard {...room} />

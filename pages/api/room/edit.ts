@@ -17,7 +17,7 @@ export default async function handler(
         .then(async (user) => {
           const { body } = req;
 
-          const { price, description, number, whatsapp, expences, free, id } =
+          const { price, description, number, whatsapp, expenses, free, id } =
             body;
 
           const room = await prisma.room.findFirst({
@@ -38,8 +38,8 @@ export default async function handler(
               ...(description && { description }),
               ...(number && { number }),
               ...(whatsapp && { whatsapp }),
-              ...(expences && { expences }),
-              ...(free && { free }),
+              ...(expenses !== null && { expenses }),
+              ...(free !== null && { free }),
             },
           });
 

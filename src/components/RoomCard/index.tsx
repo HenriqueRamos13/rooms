@@ -1,19 +1,12 @@
 import { HeartIcon, ShareIcon } from "@heroicons/react/solid";
 import Image from "next/image";
 import { useState } from "react";
+import { RoomInterface } from "../../../pages";
 import { classNames } from "../../utils/classNames";
 import Divider from "../Divider";
 import WhatsappButton from "../WhatsappButton";
 
-interface Props {
-  images: string[];
-  title: string;
-  description: string;
-  number: string;
-  url: string;
-  price: string;
-  expenses: boolean;
-  free: boolean;
+interface Props extends RoomInterface {
   preview?: boolean;
 }
 
@@ -39,9 +32,10 @@ const ButtonImage: React.FC<PropsBtn> = ({ onClick, className, children }) => {
 
 const RoomCard: React.FC<Props> = ({
   description,
-  expenses,
+  expences,
   images,
   number,
+  whatsapp,
   price,
   url,
   title,
@@ -105,13 +99,13 @@ const RoomCard: React.FC<Props> = ({
               {free ? (
                 <p className="text-green-700">Vago</p>
               ) : (
-                <p className="text-red-700">Vago em 2 meses</p>
+                <p className="text-red-700">Atualmente arrendado</p>
               )}
             </div>
 
             <div className="w-full flex flex-row items-center p-2 py-2">
               <b className="font-bold text-black text-2xl">€{price}</b>
-              <p className="text-gray-700">/mês {expenses && "+ despesas"}</p>
+              <p className="text-gray-700">/mês {expences && "+ despesas"}</p>
             </div>
           </div>
           <div className="w-full flex flex-row items-center justify-between">
@@ -124,7 +118,14 @@ const RoomCard: React.FC<Props> = ({
                 <ShareIcon width={30} height={30} />
               </button>
             </div>
-            <WhatsappButton number={number} url={`https://google.com/${url}`} />
+            {whatsapp ? (
+              <WhatsappButton
+                number={number}
+                url={`https://localhost:3000/quarto/${url}`}
+              />
+            ) : (
+              <p>Número de contato: {number}</p>
+            )}
           </div>
         </div>
       </div>

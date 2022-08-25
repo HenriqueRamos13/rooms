@@ -18,10 +18,14 @@ export default async function handler(
           const newHouse = await prisma.house.create({
             data: {
               city,
-              country,
+              country: "Portugal",
               name,
               street,
               neighborhood,
+              city_formatted: city.toLowerCase().replace(/ /g, "-"),
+              neighborhood_formatted: neighborhood
+                .toLowerCase()
+                .replace(/ /g, "-"),
               images: {
                 create: photos.map((url: string) => ({ url: url })),
               },

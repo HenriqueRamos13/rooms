@@ -6,16 +6,15 @@ interface Props {
 
 const WhatsappButton: React.FC<Props> = ({ number, url, disabled }) => {
   return (
-    <button disabled={disabled} className="btn btn-success">
-      <a
-        className="text-white"
-        href={`https://wa.me/${number}?text=Olá estou interessado neste quarto! ${url}.`}
-        target="_blank"
-        rel="noreferrer noopener nofollow"
-      >
+    <a
+      href={`https://wa.me/${number}?text=Olá estou interessado neste quarto! ${url}`}
+      target="_blank"
+      rel="noreferrer noopener nofollow"
+    >
+      <button disabled={disabled} className="btn btn-success text-white">
         Contato direto por Whatsapp
-      </a>
-    </button>
+      </button>
+    </a>
   );
 };
 

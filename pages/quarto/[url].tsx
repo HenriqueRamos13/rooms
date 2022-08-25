@@ -1,5 +1,6 @@
 import type { GetStaticPropsContext, NextPage, NextPageContext } from "next";
 import Head from "next/head";
+import { RoomInterface } from "..";
 import FullWContent from "../../src/components/Contents/DefaultContent/FullWContent";
 import ParentDefaultContent from "../../src/components/Contents/DefaultContent/ParentDefaultContent";
 import { prisma } from "../../src/utils/lib/prisma";
@@ -14,7 +15,8 @@ export async function getStaticPaths(context: NextPageContext) {
   const paths = rooms.map((room) => {
     return {
       params: {
-        url: `${process.env.URL}/quarto/${room.url}`,
+        // url: `${process.env.URL}/quarto/${room.url}`,
+        url: `${room.url}`,
       },
     };
   });
@@ -52,22 +54,17 @@ export async function getStaticProps({
     return {
       props: {
         room: {
-          images: room?.images
-            ?.map((e) => e.url)
-            ?.concat(room?.house?.images?.map((e) => e.url)),
-          description: room?.description,
-          number: room?.number,
-          whatsapp: room?.whatsapp,
-          url: room?.url,
-          price: Number(room?.price),
-          free: room?.free,
-          expenses: room?.expences,
-          home: {
-            city: room?.house?.city,
-            country: room?.house?.country,
-            street: room?.house?.street,
-            neighborhood: room?.house?.neighborhood,
-          },
+          images: room.house.images
+            .map((image) => image.url)
+            .concat(room.house.images.map((image) => image.url)),
+          title: room.title,
+          description: room.description,
+          price: Number(room.price),
+          url: room.url,
+          free: room.free,
+          expenses: room.expenses,
+          number: room.number,
+          whatsapp: room.whatsapp,
         },
       },
     };
@@ -80,24 +77,8 @@ export async function getStaticProps({
   }
 }
 
-interface Room {
-  images: string[];
-  description: string;
-  number: string;
-  url: string;
-  price: string;
-  free: boolean;
-  expences: boolean;
-  home: {
-    city: string;
-    country: string;
-    street: string;
-    neighborhood: string;
-  };
-}
-
 interface Props {
-  room: Room;
+  room: RoomInterface;
 }
 
 const Quarto: NextPage<Props> = ({ room }) => {

@@ -130,6 +130,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
   const [step, setStep] = useState<number>(0);
   const [duration, setDuration] = useState<number>(1);
   const [whatsapp, setWhatsapp] = useState("");
+  const [number, setNumber] = useState("");
   const [steps, setSteps] = useState<{ name: string; title: string }[]>([
     { name: "Fazer login", title: "Crie uma conta ou faça login" },
     { name: "Escolher/Criar uma casa", title: "Crie ou escolha uma casa" },
@@ -298,6 +299,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
           size: room_size,
           photos: roomPhotos as any,
           benefits,
+          number,
+          whatsapp,
         }),
       });
 
@@ -328,6 +331,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
           size: room_size,
           photos: roomPhotos as any,
           benefits,
+          number,
+          whatsapp,
         }),
       });
 
@@ -410,9 +415,12 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                         <InputLabel
                           disabled={selectedHouse !== ""}
                           label="Nome da Casa"
-                          onChange={(v) => setHome_name(v)}
+                          onChange={(v) => setHome_name(v.slice(0, 50))}
                           value={home_name}
-                          description="Este é apenas um nome fictício, para que você identifique a casa depois. Os usuários não irão ver isso."
+                          description={
+                            "Este é apenas um nome fictício, para que você identifique a casa depois. Os usuários não irão ver isso." +
+                            ` Dígitos: (${home_name.length}/50)`
+                          }
                         />
 
                         <Select
@@ -480,9 +488,12 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                       <div className="grid gird-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <InputLabel
                           label="Nome do Quarto"
-                          onChange={(v) => setRoom_name(v)}
+                          onChange={(v) => setRoom_name(v.slice(0, 50))}
                           value={room_name}
-                          description="Este é apenas um nome fictício, para que você identifique o quarto depois. Os usuários não irão ver isso."
+                          description={
+                            "Este é apenas um nome fictício, para que você identifique o quarto depois. Os usuários não irão ver isso." +
+                            ` Dígitos: (${room_name.length}/50)`
+                          }
                         />
                         <InputLabel
                           label="Valor do quarto"
@@ -503,15 +514,18 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                         />
                         <TextArea
                           label="Descrição"
-                          onChange={(v) => setRoom_description(v)}
+                          onChange={(v) => setRoom_description(v.slice(0, 165))}
                           value={room_description}
-                          description="Um breve texto que o usuário poderá ver no anuncio do quarto."
+                          description={
+                            "Um breve texto que o usuário poderá ver no anuncio do quarto." +
+                            ` Dígitos: (${room_description.length}/165)`
+                          }
                         />
 
                         <InputLabel
                           label="Whatsapp de contato"
                           onChange={(v) => {
-                            setWhatsapp(v.slice(0, 12));
+                            setWhatsapp(v.slice(0, 16));
                           }}
                           value={whatsapp}
                           description="Número de Whatsapp para contato por Whatsapp. Use apenas número incluido o código do país. Exemplo de número Português: 351999999999 (Informação pública para usuários)"
@@ -520,10 +534,10 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                         <InputLabel
                           label="Número de contato"
                           onChange={(v) => {
-                            setWhatsapp(v.slice(0, 12));
+                            setNumber(v.slice(0, 16));
                           }}
-                          value={whatsapp}
-                          description="Número de contato para contato por ligação. Use apenas número incluido o código do país. Exemplo de número Português: 351999999999 (Informação pública para usuários)"
+                          value={number}
+                          description="Número de contato para contato por ligação caso não queira contato por whatsapp. Use apenas número incluido o código do país. Exemplo de número Português: 351999999999 (Informação pública para usuários)"
                         />
 
                         <Checkbox
@@ -610,9 +624,10 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                               ]}
                               free
                               price={room_price.toString()}
-                              number={whatsapp || ""}
+                              number={number || ""}
+                              whatsapp={whatsapp || ""}
                               url="123"
-                              title={`${street}, ${neighborhood} - ${city}, ${country}`}
+                              title={`${street}, ${neighborhood} - ${city}`}
                               preview={true}
                             />
                           </div>
@@ -622,7 +637,6 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                             value={duration.toString()}
                           >
                             <option value="1">1 Ano</option>
-                            <option value="2">2 Anos</option>
                           </Select>
                           <h2 className="text-2xl text-gray-800 my-4 font-bold">
                             Valor final:{" "}
@@ -631,7 +645,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                                 return Intl.NumberFormat("pt-PT", {
                                   style: "currency",
                                   currency: "EUR",
-                                }).format(60);
+                                }).format(50);
                               } else if (duration === 2) {
                                 return Intl.NumberFormat("pt-PT", {
                                   style: "currency",
