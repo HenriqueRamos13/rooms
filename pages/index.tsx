@@ -1,4 +1,5 @@
 import type { NextPage, NextPageContext } from "next";
+import { useRouter } from "next/router";
 import { FormEvent, useEffect, useState } from "react";
 import Content from "../src/components/Contents/DefaultContent/Content";
 import FullWContent from "../src/components/Contents/DefaultContent/FullWContent";
@@ -48,7 +49,7 @@ export async function getServerSideProps(context: NextPageContext) {
   return {
     props: {
       rooms: rooms.map((room) => ({
-        images: room.house.images
+        images: room.images
           .map((image) => image.url)
           .concat(room.house.images.map((image) => image.url)),
         title: room.title,
@@ -81,6 +82,7 @@ interface Props {
 }
 
 const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
+  const router = useRouter();
   const [rooms, setRooms] = useState(serverRooms || []);
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
@@ -222,7 +224,10 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
             rooms.length > 0 &&
             rooms.map((room) => (
               <Content key={room.url!}>
-                <RoomCard {...room} />
+                <RoomCard
+                  {...room}
+                  onClick={() => router.push(`/quarto/${room.url}`)}
+                />
               </Content>
             ))}
         </LeftContent>

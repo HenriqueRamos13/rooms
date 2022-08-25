@@ -1,11 +1,8 @@
 import type { NextPage, NextPageContext } from "next";
-import Image from "next/image";
 import { FormEvent, useEffect, useState } from "react";
 import Content from "../../src/components/Contents/DefaultContent/Content";
 import FullWContent from "../../src/components/Contents/DefaultContent/FullWContent";
-import LeftContent from "../../src/components/Contents/DefaultContent/LeftContent";
 import ParentDefaultContent from "../../src/components/Contents/DefaultContent/ParentDefaultContent";
-import RightContent from "../../src/components/Contents/DefaultContent/RightContent";
 import InputLabel from "../../src/components/InputLabel";
 import RoomCard from "../../src/components/RoomCard";
 import { classNames } from "../../src/utils/classNames";
@@ -18,6 +15,7 @@ import Checkbox from "../../src/components/Checkbox";
 import TextArea from "../../src/components/TextArea";
 import { BENEFITS } from "../../src/utils/benefits";
 import { prisma } from "../../src/utils/lib/prisma";
+import { ToastContainer, toast } from "react-toastify";
 
 export async function getServerSideProps(context: NextPageContext) {
   const {
@@ -342,6 +340,10 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
 
       if (id) {
         alert(id);
+        // toast("Link do quarto copiado com sucesso!", {
+        //   type: "success",
+        //   position: "bottom-center",
+        // });
       } else if (success && data) {
         alert(data.url);
       } else {

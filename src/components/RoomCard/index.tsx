@@ -5,9 +5,11 @@ import { RoomInterface } from "../../../pages";
 import { classNames } from "../../utils/classNames";
 import Divider from "../Divider";
 import WhatsappButton from "../WhatsappButton";
+import { ToastContainer, toast } from "react-toastify";
 
 interface Props extends RoomInterface {
   preview?: boolean;
+  onClick?: () => void;
 }
 
 interface PropsBtn {
@@ -41,6 +43,7 @@ const RoomCard: React.FC<Props> = ({
   title,
   free,
   preview,
+  onClick,
 }) => {
   const [image, setImage] = useState(images[0]);
   const [index, setIndex] = useState(0);
@@ -85,6 +88,7 @@ const RoomCard: React.FC<Props> = ({
           "grid col-span-2 py-2",
           preview ? "pointer-events-none" : ""
         )}
+        onClick={onClick}
       >
         <div className="flex flex-col justify-between items-start">
           <div className="cursor-pointer">
@@ -114,9 +118,30 @@ const RoomCard: React.FC<Props> = ({
                 <HeartIcon width={30} height={30} />
               </button> */}
               <div className="w-[6px]"></div>
-              <button className="border rounded-md p-2">
-                <ShareIcon width={30} height={30} />
-              </button>
+              {navigator &&
+                navigator.clipboard &&
+                navigator.clipboard.writeText && (
+                  <button
+                    className="border rounded-md p-2"
+                    onClick={() => {
+                      if (
+                        navigator &&
+                        navigator.clipboard &&
+                        navigator.clipboard.writeText
+                      ) {
+                        navigator.clipboard.writeText(
+                          `${window.location.href}/quarto/${url}`
+                        );
+                        toast("Link do quarto copiado com sucesso!", {
+                          type: "success",
+                          position: "bottom-center",
+                        });
+                      }
+                    }}
+                  >
+                    <ShareIcon width={30} height={30} />
+                  </button>
+                )}
             </div>
             {whatsapp ? (
               <WhatsappButton
