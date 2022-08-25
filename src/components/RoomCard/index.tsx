@@ -118,7 +118,8 @@ const RoomCard: React.FC<Props> = ({
                 <HeartIcon width={30} height={30} />
               </button> */}
               <div className="w-[6px]"></div>
-              {navigator &&
+              {window !== undefined &&
+                navigator &&
                 navigator.clipboard &&
                 navigator.clipboard.writeText && (
                   <button
