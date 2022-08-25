@@ -369,7 +369,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                   <li
                     key={i}
                     className={classNames(
-                      "step",
+                      "step text-xs sm:text-sm",
                       step >= i ? "step-primary" : ""
                     )}
                   >
