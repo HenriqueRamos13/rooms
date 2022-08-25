@@ -6,6 +6,7 @@ import Divider from "../Divider";
 import WhatsappButton from "../WhatsappButton";
 
 interface Props {
+  id: string;
   images: string[];
   title: string;
   description: string;
@@ -15,10 +16,12 @@ interface Props {
   expenses: boolean;
   free: boolean;
   preview?: boolean;
+  onEdit: () => void;
 }
 
 interface PropsBtn {
   onClick: () => void;
+
   className: string;
   children: React.ReactNode;
 }
@@ -37,19 +40,24 @@ const ButtonImage: React.FC<PropsBtn> = ({ onClick, className, children }) => {
   );
 };
 
-const RoomCard: React.FC<Props> = ({
+const RoomCardEditable: React.FC<Props> = ({
+  id,
   description,
-  expenses,
+  expenses: expensesProp,
   images,
   number,
-  price,
+  price: priceProp,
   url,
   title,
-  free,
+  free: freeProp,
   preview,
+  onEdit,
 }) => {
   const [image, setImage] = useState(images[0]);
   const [index, setIndex] = useState(0);
+  const [price, setPrice] = useState(priceProp);
+  const [free, setFree] = useState(freeProp);
+  const [expenses, setExpenses] = useState(expensesProp);
 
   const slide = (v: number) => {
     if (index + v > images.length - 1) {
@@ -86,12 +94,7 @@ const RoomCard: React.FC<Props> = ({
           &gt;
         </ButtonImage>
       </div>
-      <div
-        className={classNames(
-          "grid col-span-2 py-2",
-          preview ? "pointer-events-none" : ""
-        )}
-      >
+      <div className={classNames("grid col-span-2 py-2")}>
         <div className="flex flex-col justify-between items-start">
           <div className="cursor-pointer">
             <div>
@@ -115,16 +118,9 @@ const RoomCard: React.FC<Props> = ({
             </div>
           </div>
           <div className="w-full flex flex-row items-center justify-between">
-            <div className="flex flex-row">
-              {/* <button className="border rounded-md p-2">
-                <HeartIcon width={30} height={30} />
-              </button> */}
-              <div className="w-[6px]"></div>
-              <button className="border rounded-md p-2">
-                <ShareIcon width={30} height={30} />
-              </button>
-            </div>
-            <WhatsappButton number={number} url={`https://google.com/${url}`} />
+            <button className="btn btn-info text-white" onClick={onEdit}>
+              Editar
+            </button>
           </div>
         </div>
       </div>
@@ -132,4 +128,4 @@ const RoomCard: React.FC<Props> = ({
   );
 };
 
-export default RoomCard;
+export default RoomCardEditable;

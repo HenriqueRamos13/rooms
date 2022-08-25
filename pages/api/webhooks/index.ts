@@ -1,8 +1,9 @@
 import { buffer } from "micro";
 import Cors from "micro-cors";
 import { NextApiRequest, NextApiResponse } from "next";
-// import { prisma } from "../../../src/utils/db";
+import { prisma } from "../../../src/utils/lib/prisma";
 import Stripe from "stripe";
+import SGRID from "../../../src/utils/mail";
 const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 
 const webhookSecret: string = process.env.STRIPE_WEBHOOK_SECRET!;
@@ -20,7 +21,6 @@ const cors = Cors({
 
 const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
   if (req.method === "POST") {
-    console.log("AAAAA HOOKS");
     const buf = await buffer(req);
     const sig = req.headers["stripe-signature"]!;
 
@@ -66,41 +66,26 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
       const { status } = sessionSuccess;
 
       if (status === "complete") {
-        // const { job_id, coupon } = sessionSuccess.metadata as any;
-        // const { user } = await prisma.job.update({
-        //   where: { id: job_id },
-        //   data: { payed: true },
-        //   include: {
-        //     user: true,
-        //   },
-        // });
-        // if (coupon) {
-        //   const couponData = await prisma.coupon.findFirst({
-        //     where: { code: coupon },
-        //   });
-        //   const exist = await prisma.usersOnCoupons.findFirst({
-        //     where: {
-        //       user: { id: user!.id },
-        //       coupon: { id: couponData!.id },
-        //     },
-        //   });
-        //   if (!exist) {
-        //     await prisma.usersOnCoupons.create({
-        //       data: {
-        //         user: {
-        //           connect: {
-        //             id: user!.id,
-        //           },
-        //         },
-        //         coupon: {
-        //           connect: {
-        //             id: couponData!.id,
-        //           },
-        //         },
-        //       },
-        //     });
-        //   }
-        // }
+        const { room: roomsId, user: userId } = sessionSuccess.metadata as any;
+        const { user, ...room } = await prisma.room.update({
+          where: { id: roomsId },
+          data: { can_post: true, payed_in: new Date() },
+          include: {
+            user: true,
+          },
+        });
+
+        await SGRID(
+          `Olá, Seu quarto já está publicado! Você pode checar neste <a href="${process.env.URL}/quarto/${room.url}">LINK</a>`,
+          {
+            to: user.email,
+            subject: "Quarto publicado com sucesso!",
+          }
+        ).catch((err) => {
+          console.log(
+            `Erro ao enviar email para ${user.email} sobre o quarto ${room.url}`
+          );
+        });
       }
 
       console.log("💰 PaymentIntent: " + JSON.stringify(sessionSuccess));

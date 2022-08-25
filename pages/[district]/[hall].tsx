@@ -48,7 +48,7 @@ export async function getStaticProps({
     title: "Rua da Saudade 79A - Covilhã, Portugal",
     number: "5531984094790",
     price: "160",
-    share_id: "YDK4Hj",
+    url: "YDK4Hj",
     expenses: true,
     free: true,
     description:
@@ -74,7 +74,7 @@ interface Room {
   title: string;
   description: string;
   number: string;
-  share_id: string;
+  url: string;
   price: string;
   free: boolean;
   expenses: boolean;
@@ -139,7 +139,7 @@ const SEOFind: NextPage<Props> = ({ rooms, title }) => {
         <LeftContent>
           {rooms &&
             rooms.map((room) => (
-              <Content key={room.share_id!}>
+              <Content key={room.url!}>
                 <RoomCard {...room} />
               </Content>
             ))}

@@ -112,6 +112,8 @@ interface Props {
 }
 
 const PostRoom: NextPage<Props> = ({ user, token }) => {
+  const [myHouses, setMyHouses] = useState<any[]>([]);
+  const [selectedHouse, setSelectedHouse] = useState<any>("");
   const [houseImages, setHouseImages] = useState<any[]>([]);
   const [roomImages, setRoomImages] = useState<any[]>([]);
   const [home_name, setHome_name] = useState("");
@@ -134,7 +136,25 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
     { name: "Cadastrar um quarto", title: "Cadastre seu quarto" },
     { name: "Efetuar pagamento", title: "Efetue o pagamento" },
   ]);
-  const { setUser, setToken, user: userContext } = useAuth();
+  const {
+    setUser,
+    setToken,
+    user: userContext,
+    token: tokenContext,
+  } = useAuth();
+
+  const getMyHouses = async () => {
+    const res = await fetch("/api/house/my-houses", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${tokenContext}`,
+      },
+    });
+
+    const data = await res.json();
+    setMyHouses(data.data.houses);
+  };
 
   useEffect(() => {
     if (user && token) {
@@ -142,6 +162,36 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
       setToken(token);
     }
   }, []);
+
+  useEffect(() => {
+    if (userContext) {
+      getMyHouses();
+    }
+  }, [tokenContext]);
+
+  useEffect(() => {
+    if (selectedHouse !== "") {
+      const house = myHouses.find((house) => house.id === selectedHouse);
+      setHome_name(house.name);
+      setCountry(house.country);
+      setCity(house.city);
+      setNeighborhood(house.neighborhood);
+      setStreet(house.street);
+      setHouseImages(
+        Object.assign(
+          [],
+          [...house.images.map((e: any) => ({ objectURL: e.url }))]
+        )
+      );
+    } else {
+      setHome_name("");
+      setCountry("");
+      setCity("");
+      setNeighborhood("");
+      setStreet("");
+      setHouseImages(Object.assign([], []));
+    }
+  }, [selectedHouse]);
 
   useEffect(() => {
     if (userContext) {
@@ -173,6 +223,126 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
     if (step + v < 0 || step + v > steps.length - 1) return;
 
     setStep(step + v);
+  };
+
+  const handleCreate = async () => {
+    const roomPhotos: any[] = [];
+
+    for (const photo of roomImages) {
+      const data = new FormData();
+      data.append("file", photo.file);
+      data.append("upload_preset", "test-mydevjob");
+      await fetch("https://api.cloudinary.com/v1_1/dve80pftx/image/upload", {
+        method: "POST",
+        body: data,
+      })
+        .then((res) => res.json())
+        .then((data) => {
+          roomPhotos.push(data.secure_url);
+        });
+    }
+
+    if (selectedHouse === "") {
+      const housePhotos: any[] = [];
+
+      for (const photo of houseImages) {
+        const data = new FormData();
+        data.append("file", photo.file);
+        data.append("upload_preset", "test-mydevjob");
+        await fetch("https://api.cloudinary.com/v1_1/dve80pftx/image/upload", {
+          method: "POST",
+          body: data,
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            housePhotos.push(data.secure_url);
+          });
+      }
+
+      const resHouse = await fetch("/api/house/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenContext}`,
+        },
+        body: JSON.stringify({
+          name: home_name,
+          country,
+          city,
+          neighborhood,
+          street,
+          photos: housePhotos,
+        }),
+      });
+
+      const dataHouse = await resHouse.json();
+
+      const {
+        data: { house: idHouse },
+      } = dataHouse;
+
+      // ROOM
+
+      const resRoom = await fetch("/api/room/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenContext}`,
+        },
+        body: JSON.stringify({
+          house_id: idHouse,
+          name: room_name,
+          description: room_description,
+          price: room_price,
+          expenses,
+          size: room_size,
+          photos: roomPhotos as any,
+          benefits,
+        }),
+      });
+
+      const dataRoom = await resRoom.json();
+
+      const { success, message, id, data } = dataRoom;
+
+      if (id) {
+        alert(id);
+      } else if (success && data) {
+        alert(data.url);
+      } else {
+        alert(message);
+      }
+    } else {
+      const resRoom = await fetch("/api/room/create", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${tokenContext}`,
+        },
+        body: JSON.stringify({
+          house_id: selectedHouse,
+          name: room_name,
+          description: room_description,
+          price: room_price,
+          expenses,
+          size: room_size,
+          photos: roomPhotos as any,
+          benefits,
+        }),
+      });
+
+      const dataRoom = await resRoom.json();
+
+      const { success, message, id, data } = dataRoom;
+
+      if (id) {
+        alert(id);
+      } else if (success && data) {
+        alert(data.url);
+      } else {
+        alert(message);
+      }
+    }
   };
 
   return (
@@ -222,16 +392,23 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                       <div className="grid gird-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                         <Select
                           label="Selecione uma casa"
-                          onChange={() => {}}
-                          value=""
+                          onChange={(v) => setSelectedHouse(v)}
+                          value={selectedHouse}
                           description="Seleciona uma das casas já cadastradas para cadastrar um novo quarto."
                         >
                           <option value="">Selecione uma casa</option>
+                          {myHouses.map((e, i) => (
+                            <option key={i} value={e.id}>
+                              {e.name}
+                            </option>
+                          ))}
                         </Select>
+
                         <div className="divider col-span-full font-bold">
                           Ou cadastre uma nova casa
                         </div>
                         <InputLabel
+                          disabled={selectedHouse !== ""}
                           label="Nome da Casa"
                           onChange={(v) => setHome_name(v)}
                           value={home_name}
@@ -239,6 +416,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                         />
 
                         <Select
+                          disabled={selectedHouse !== ""}
                           label="País"
                           onChange={(v) => setCountry(v)}
                           value={country}
@@ -247,6 +425,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                           <option value="Portugal">Portugal</option>
                         </Select>
                         <Select
+                          disabled={selectedHouse !== ""}
                           label="Distrito"
                           onChange={(v) => setCity(v)}
                           value={city}
@@ -260,6 +439,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                           ))}
                         </Select>
                         <Select
+                          disabled={selectedHouse !== ""}
                           label="Região/Bairro/Concelho"
                           onChange={(v) => setNeighborhood(v)}
                           value={neighborhood}
@@ -275,6 +455,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                           )}
                         </Select>
                         <InputLabel
+                          disabled={selectedHouse !== ""}
                           label="Rua/Avenida"
                           onChange={(v) => setStreet(v)}
                           value={street}
@@ -282,14 +463,16 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                         />
                         <div />
 
-                        <UploadFiles
-                          setImages={(e) =>
-                            setHouseImages(Object.assign([], [...e]))
-                          }
-                          images={houseImages}
-                          obsText="(Apenas as imagens da casa como cozinha, banheiro, sala ... As
+                        {selectedHouse === "" && (
+                          <UploadFiles
+                            setImages={(e) =>
+                              setHouseImages(Object.assign([], [...e]))
+                            }
+                            images={houseImages}
+                            obsText="(Apenas as imagens da casa como cozinha, banheiro, sala ... As
                             fotos do quarto serão colocadas depois)"
-                        />
+                          />
+                        )}
                       </div>
                     );
                   case 2:
@@ -428,7 +611,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                               free
                               price={room_price.toString()}
                               number={whatsapp || ""}
-                              share_id="123"
+                              url="123"
                               title={`${street}, ${neighborhood} - ${city}, ${country}`}
                               preview={true}
                             />
@@ -462,8 +645,11 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                               }
                             })()}{" "}
                           </h2>
-                          <button className="btn btn-primary my-4">
-                            Pagar com Stripe
+                          <button
+                            className="btn btn-primary my-4"
+                            onClick={handleCreate}
+                          >
+                            Publicar e pagar
                           </button>
                         </div>
                       </div>
@@ -483,13 +669,17 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
 
               <button
                 disabled={
-                  (step === 0 && !userContext) ||
-                  step === steps.length - 1 ||
-                  (step === 2 &&
-                    (roomImages.length === 0 ||
-                      houseImages.length === 0 ||
-                      street.trim().length === 0 ||
-                      room_price <= 0))
+                  step === 2
+                    ? selectedHouse === ""
+                      ? roomImages.length === 0 ||
+                        houseImages.length === 0 ||
+                        street.trim().length === 0 ||
+                        room_price <= 0
+                      : roomImages.length === 0 ||
+                        street.trim().length === 0 ||
+                        room_price <= 0
+                    : (step === 0 && !userContext) || step === steps.length - 1
+                  // selectedHouse === "" &&
                 }
                 // disabled={
                 //   step === steps.length - 1 ||

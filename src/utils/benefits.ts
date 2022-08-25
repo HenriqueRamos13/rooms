@@ -111,6 +111,22 @@ const BENEFITS = [
     id: "28",
     name: "🔇 Não permite ruídos",
   },
+  {
+    id: "29",
+    name: "🏳️‍🌈 LGBTQ+ friendly",
+  },
+  {
+    id: "30",
+    name: "🛌 Cama de casal",
+  },
+  {
+    id: "31",
+    name: "🛁 Casa de banho privada",
+  },
+  {
+    id: "32",
+    name: "🏙 Último andar",
+  },
 ];
 
 export { BENEFITS };

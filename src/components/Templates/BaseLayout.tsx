@@ -8,7 +8,7 @@ import { useAuth } from "../../utils/contexts/Auth";
 import { ToastContainer, toast } from "react-toastify";
 
 const userNavigation = [
-  { name: "Meus Quartos", href: "#" },
+  { name: "Meus Quartos", href: "/perfil/quartos" },
   // { name: "Settings", href: "#" },
 ];
 

@@ -7,6 +7,72 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Image {
+  id String @id @default(uuid())
+
+  url String @unique
+
+  house    House?  @relation(fields: [house_id], references: [id], onDelete: Cascade)
+  house_id String?
+  room     Room?   @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  room_id  String?
+
+  created_at DateTime @default(now()) @db.Timestamp
+
+  @@map("images")
+}
+
+model Room {
+  id String @id @default(uuid())
+
+  name        String?
+  price       Decimal
+  description String?
+  size        Decimal?
+  number      String?
+  whatsapp    String?
+  expences    Boolean?  @default(false)
+  free        Boolean   @default(true)
+  benefits    String[]
+  can_post    Boolean   @default(false)
+  url         String    @unique
+  payed_in    DateTime? @updatedAt @db.Timestamp
+
+  images Image[]
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String
+
+  house    House  @relation(fields: [house_id], references: [id], onDelete: Cascade)
+  house_id String
+
+  created_at DateTime @default(now()) @db.Timestamp
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp
+
+  @@map("rooms")
+}
+
+model House {
+  id String @id @default(uuid())
+
+  name         String?
+  country      String
+  city         String
+  neighborhood String
+  street       String
+
+  rooms  Room[]
+  images Image[]
+
+  user    User   @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  user_id String
+
+  created_at DateTime @default(now()) @db.Timestamp
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp
+
+  @@map("houses")
+}
+
 model User {
   id String @id @default(uuid())
 
@@ -17,8 +83,11 @@ model User {
 
   role Role @default(Senhorio)
 
+  houses House[]
+  rooms  Room[]
+
   created_at DateTime @default(now()) @db.Timestamp
-  updated_at DateTime @updatedAt @db.Timestamp
+  updated_at DateTime @default(now()) @updatedAt @db.Timestamp
 
   @@map("users")
 }

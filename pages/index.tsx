@@ -10,21 +10,34 @@ import Select from "../src/components/Select";
 import { BENEFITS } from "../src/utils/benefits";
 import { classNames } from "../src/utils/classNames";
 import { COUNTRIES } from "../src/utils/Countries";
+import { prisma } from "../src/utils/lib/prisma";
 
 export async function getServerSideProps(context: NextPageContext) {
-  const room = {
-    images: ["/quarto.jpeg", "/quarto2.jpeg"],
-    title: "Rua da Saudade 79A - Covilhã, Portugal",
-    number: "5531984094790",
-    price: "160",
-    share_id: "YDK4Hj",
-    expenses: true,
-    free: true,
-    description:
-      "Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet",
-  };
+  // const room = {
+  //   images: ["/quarto.jpeg", "/quarto2.jpeg"],
+  //   title: "Rua da Saudade 79A - Covilhã, Portugal",
+  //   number: "5531984094790",
+  //   price: "160",
+  //   url: "YDK4Hj",
+  //   expenses: true,
+  //   free: true,
+  //   description:
+  //     "Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet",
+  // };
 
-  const rooms = Array(100).fill(room);
+  // const rooms = Array(100).fill(room);
+
+  const rooms = await prisma.room.findMany({
+    where: {
+      can_post: true,
+    },
+    include: {
+      house: true,
+    },
+    orderBy: {
+      created_at: "desc",
+    },
+  });
 
   return {
     props: {
@@ -38,7 +51,7 @@ interface Room {
   title: string;
   description: string;
   number: string;
-  share_id: string;
+  url: string;
   price: string;
   free: boolean;
   expenses: boolean;
@@ -54,23 +67,23 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
   const [neighborhood, setNeighborhood] = useState("");
   const [benefits, setBenefits] = useState<string[]>([]);
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  // const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
+  //   e.preventDefault();
 
-    const form = new FormData(e.target as HTMLFormElement);
-    const formData = Object.fromEntries(form.entries());
+  //   const form = new FormData(e.target as HTMLFormElement);
+  //   const formData = Object.fromEntries(form.entries());
 
-    const res = await fetch("/api/user/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
+  //   const res = await fetch("/api/user/create", {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify(formData),
+  //   });
 
-    const data = await res.json();
-    console.log(data);
-  };
+  //   const data = await res.json();
+  //   console.log(data);
+  // };
 
   return (
     <>
@@ -146,7 +159,7 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
         <LeftContent>
           {rooms &&
             rooms.map((room) => (
-              <Content key={room.share_id!}>
+              <Content key={room.url!}>
                 <RoomCard {...room} />
               </Content>
             ))}
