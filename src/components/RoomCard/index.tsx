@@ -32,7 +32,7 @@ const ButtonImage: React.FC<PropsBtn> = ({ onClick, className, children }) => {
 
 const RoomCard: React.FC<Props> = ({
   description,
-  expences,
+  expenses,
   images,
   number,
   whatsapp,
@@ -105,7 +105,7 @@ const RoomCard: React.FC<Props> = ({
 
             <div className="w-full flex flex-row items-center p-2 py-2">
               <b className="font-bold text-black text-2xl">€{price}</b>
-              <p className="text-gray-700">/mês {expences && "+ despesas"}</p>
+              <p className="text-gray-700">/mês {expenses && "+ despesas"}</p>
             </div>
           </div>
           <div className="w-full flex flex-row items-center justify-between">
