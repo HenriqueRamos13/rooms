@@ -88,8 +88,8 @@ const Legal: NextPage<Props> = ({ rooms: serverRooms }) => {
     <>
       <ParentDefaultContent>
         <FullWContent>
-          <Content title={`Politicas de privacidade`} boldTitle h1>
-            dfyusdbfklsakjn
+          <Content title={`Políticas de privacidade`} boldTitle h1>
+            Em construção
           </Content>
         </FullWContent>
       </ParentDefaultContent>

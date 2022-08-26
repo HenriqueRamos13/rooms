@@ -419,9 +419,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
             <Title>Publicar um quarto</Title>
             <CenterItem>
               <p className="text-center max-w-[70%]">
-                Lorem ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem
-                ipsum dolor sit amet Lorem ipsum dolor sit amet Lorem ipsum
-                dolor sit amet Lorem ipsum dolor sit amet
+                Aqui você pode criar uma casa onde depois serão adicionados os
+                quartos.
               </p>
             </CenterItem>
             <CenterItem>
@@ -512,7 +511,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                           label="Região/Bairro/Concelho"
                           onChange={(v) => setNeighborhood(v)}
                           value={neighborhood}
-                          description='Região ou bairro em que a casa está localizada. Por exemplo: "Alameda", "Covilhã"'
+                          description='Região ou bairro em que a casa está localizada. Por exemplo: "Alameda", "Lousã"'
                         >
                           <option value="">Selecione uma região</option>
                           {(COUNTRIES.Portugal as any)[city]?.map(
@@ -728,7 +727,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                             {loading ? (
                               <progress className="progress progress-info w-56"></progress>
                             ) : (
-                              "Publicar e pagar"
+                              // "Publicar e pagar"
+                              "Publicar"
                             )}
                           </button>
                         </div>
