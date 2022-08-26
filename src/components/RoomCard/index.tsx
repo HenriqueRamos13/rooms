@@ -1,6 +1,6 @@
 import { HeartIcon, ShareIcon } from "@heroicons/react/solid";
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { RoomInterface } from "../../../pages";
 import { classNames } from "../../utils/classNames";
 import Divider from "../Divider";
@@ -45,8 +45,19 @@ const RoomCard: React.FC<Props> = ({
   preview,
   onClick,
 }) => {
+  const [showShareButton, setShowShareButton] = useState(false);
   const [image, setImage] = useState(images[0]);
   const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    if (
+      window !== undefined &&
+      window.navigator &&
+      window.navigator.clipboard
+    ) {
+      setShowShareButton(true);
+    }
+  }, []);
 
   const slide = (v: number) => {
     if (index + v > images.length - 1) {
@@ -118,31 +129,22 @@ const RoomCard: React.FC<Props> = ({
                 <HeartIcon width={30} height={30} />
               </button> */}
               <div className="w-[6px]"></div>
-              {window !== undefined &&
-                navigator &&
-                navigator.clipboard &&
-                navigator.clipboard.writeText && (
-                  <button
-                    className="border rounded-md p-2"
-                    onClick={() => {
-                      if (
-                        navigator &&
-                        navigator.clipboard &&
-                        navigator.clipboard.writeText
-                      ) {
-                        navigator.clipboard.writeText(
-                          `${window.location.href}/quarto/${url}`
-                        );
-                        toast("Link do quarto copiado com sucesso!", {
-                          type: "success",
-                          position: "bottom-center",
-                        });
-                      }
-                    }}
-                  >
-                    <ShareIcon width={30} height={30} />
-                  </button>
-                )}
+              {showShareButton && (
+                <button
+                  className="border rounded-md p-2"
+                  onClick={() => {
+                    window.navigator.clipboard.writeText(
+                      `${window.location.href}/quarto/${url}`
+                    );
+                    toast("Link do quarto copiado com sucesso!", {
+                      type: "success",
+                      position: "bottom-center",
+                    });
+                  }}
+                >
+                  <ShareIcon width={30} height={30} />
+                </button>
+              )}
             </div>
             {whatsapp ? (
               <WhatsappButton
