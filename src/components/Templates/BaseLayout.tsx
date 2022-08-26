@@ -32,9 +32,11 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
   const router = useRouter();
   const { login, logout, user } = useAuth();
   const [modal, setModal] = useState<any>(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const onLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const form = new FormData(e.target as HTMLFormElement);
     const formData = Object.fromEntries(form.entries());
@@ -45,9 +47,11 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
           type: "success",
         });
 
+        setLoading(false);
         setModal(false);
       })
       .catch((message) => {
+        setLoading(false);
         toast(message, {
           type: "error",
         });
@@ -56,6 +60,7 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
 
   const onRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
 
     const form = new FormData(e.target as HTMLFormElement);
     const formData = Object.fromEntries(form.entries());
@@ -71,12 +76,14 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
     const data = await res.json();
 
     if (data.success) {
+      setLoading(false);
       toast("Verifique seu e-mail para confirmar a conta.", {
         type: "success",
       });
 
       setModal(false);
     } else {
+      setLoading(false);
       toast(data.message, {
         type: "error",
       });
@@ -444,7 +451,11 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
                 : ""}
             </p>
             <div className="form-control mt-6">
-              <button className="btn btn-primary" type="submit">
+              <button
+                className="btn btn-primary"
+                type="submit"
+                disabled={loading}
+              >
                 {modal?.type === "Login"
                   ? "Iniciar Sessão"
                   : modal?.type === "Registro"
