@@ -6,6 +6,7 @@ import { classNames } from "../../utils/classNames";
 import Divider from "../Divider";
 import WhatsappButton from "../WhatsappButton";
 import { ToastContainer, toast } from "react-toastify";
+import { URL } from "../../utils/URL";
 
 interface Props extends RoomInterface {
   preview?: boolean;
@@ -99,28 +100,29 @@ const RoomCard: React.FC<Props> = ({
           "grid col-span-2 py-2",
           preview ? "pointer-events-none" : ""
         )}
-        onClick={onClick}
       >
         <div className="flex flex-col justify-between items-start">
           <div className="cursor-pointer">
-            <div>
-              <h2 className="text-black font-bold text-xl">{title}</h2>
-              <Divider />
-            </div>
+            <div onClick={onClick} className="w-full">
+              <div>
+                <h2 className="text-black font-bold text-xl">{title}</h2>
+                <Divider />
+              </div>
 
-            <p className="text-sm mb-2">{description.slice(0, 161)}</p>
-            <div className="w-full flex flex-row items-center">
-              <b className="font-bold text-black mr-2">Status: </b>
-              {free ? (
-                <p className="text-green-700">Vago</p>
-              ) : (
-                <p className="text-red-700">Atualmente arrendado</p>
-              )}
-            </div>
+              <p className="text-sm mb-2">{description.slice(0, 161)}</p>
+              <div className="w-full flex flex-row items-center">
+                <b className="font-bold text-black mr-2">Status: </b>
+                {free ? (
+                  <p className="text-green-700">Vago</p>
+                ) : (
+                  <p className="text-red-700">Atualmente arrendado</p>
+                )}
+              </div>
 
-            <div className="w-full flex flex-row items-center p-2 py-2">
-              <b className="font-bold text-black text-2xl">€{price}</b>
-              <p className="text-gray-700">/mês {expenses && "+ despesas"}</p>
+              <div className="w-full flex flex-row items-center p-2 py-2">
+                <b className="font-bold text-black text-2xl">€{price}</b>
+                <p className="text-gray-700">/mês {expenses && "+ despesas"}</p>
+              </div>
             </div>
           </div>
           <div className="w-full flex flex-row items-center justify-between">
@@ -146,13 +148,13 @@ const RoomCard: React.FC<Props> = ({
                 </button>
               )}
             </div>
+
             {whatsapp ? (
-              <WhatsappButton
-                number={number}
-                url={`https://localhost:3000/quarto/${url}`}
-              />
+              <WhatsappButton number={number} url={`${URL}/quarto/${url}`} />
             ) : (
-              <p>Número de contato: {number}</p>
+              <p>
+                Número de contato: <b>{number}</b>
+              </p>
             )}
           </div>
         </div>

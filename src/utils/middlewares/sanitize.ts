@@ -21,7 +21,7 @@ function iterAll(object: any) {
     object[k] = sanitizeHtml(object[k], {
       allowedTags: [],
       allowedAttributes: {},
-    });
+    }).trim();
 
     if (verifyIfIsNumber) {
       object[k] = Number(object[k]);
@@ -35,6 +35,7 @@ export const Sanitize = (value: any) =>
       iterAll(value);
       resolve(value);
     } catch (error) {
-      throw new Error("Validation failed - " + error);
+      throw new Error("Validação dos dados falhou.");
+      // throw new Error("Validação dos dados falhou - " + error);
     }
   });

@@ -1,9 +1,5 @@
 import { NextApiRequest, NextApiResponse } from "next";
-import getIp from "../../../src/utils/get_ip";
-import rateLimit from "../../../src/utils/lib/rate_limit";
 import { prisma } from "../../../src/utils/lib/prisma";
-import SGRID from "../../../src/utils/mail";
-import { uuid } from "uuidv4";
 import { AUTH } from "../../../src/utils/middlewares/auth";
 import { Role } from "@prisma/client";
 

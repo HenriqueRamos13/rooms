@@ -10,50 +10,12 @@ import RoomCardEditable from "../../src/components/RoomCardEditable";
 import TextArea from "../../src/components/TextArea";
 import { classNames } from "../../src/utils/classNames";
 import { useAuth } from "../../src/utils/contexts/Auth";
+import { toast } from "react-toastify";
+import { RoomInterface } from "..";
 
-export async function getServerSideProps(context: NextPageContext) {
-  const room = {
-    images: ["/quarto.jpeg", "/quarto2.jpeg"],
-    title: "Rua da Saudade 79A - Covilhã, Portugal",
-    number: "5531984094790",
-    whatsapp: "5531984094790",
-    price: "160",
-    share_id: "YDK4Hj",
-    expenses: true,
-    free: true,
-    description:
-      "Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet Loren ipsum dolor sit amet",
-  };
-
-  const rooms = Array(100).fill(room);
-
-  return {
-    props: {
-      rooms,
-    },
-  };
-}
-
-interface Room {
-  images: string[];
-  title: string;
-  description: string;
-  number: string;
-  url: string;
-  price: string;
-  free: boolean;
-  expenses: boolean;
-}
-
-interface Props {
-  rooms: Room[];
-}
-
-// const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
-const Home: NextPage<Props> = ({}) => {
+const Home: NextPage = ({}) => {
   const { token } = useAuth();
-  // const [rooms, setRooms] = useState(serverRooms || []);
-  const [rooms, setRooms] = useState<Room[]>([]);
+  const [rooms, setRooms] = useState<RoomInterface[]>([]);
   const [room_price, setRoom_price] = useState<number | null>(null);
   const [expenses, setExpenses] = useState<boolean | null>(null);
   const [whatsapp, setWhatsapp] = useState<string | null>(null);
@@ -61,6 +23,7 @@ const Home: NextPage<Props> = ({}) => {
   const [room_description, setRoom_description] = useState<string | null>(null);
   const [free, setFree] = useState<boolean | null>(null);
   const [modal, setModal] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const getMyRooms = async () => {
     const res = await fetch("/api/room/my-rooms", {
@@ -103,6 +66,8 @@ const Home: NextPage<Props> = ({}) => {
       ...(free !== null && { free }),
     };
 
+    setLoading(true);
+
     const res = await fetch(`/api/room/edit`, {
       method: "PUT",
       headers: {
@@ -112,8 +77,21 @@ const Home: NextPage<Props> = ({}) => {
       body: JSON.stringify(body),
     });
 
+    setLoading(false);
+
     const data = await res.json();
-    console.log(data);
+
+    if (data.message) {
+      toast(data.message, {
+        type: "warning",
+      });
+    } else {
+      toast("Quarto editado com sucesso!", {
+        type: "success",
+      });
+      getMyRooms();
+      setModal(null);
+    }
   };
 
   return (
@@ -121,10 +99,14 @@ const Home: NextPage<Props> = ({}) => {
       <ParentDefaultContent>
         <FullWContent>
           <Content
-            title={`Procurar quartos para arrendar em Portugal`}
+            title={`Meus quartos publicados (${rooms.length} quartos)`}
             boldTitle
             h1
           >
+            <p>
+              Aqui você pode visualizar seus quartos, quantas vezes cada um foi
+              clicado e pode edita-los também.
+            </p>
             {/* <div className="w-full grid grid-cols-1 gap-4 md:grid-cols-3">
               <Select
                 label="Distrito"
@@ -242,8 +224,16 @@ const Home: NextPage<Props> = ({}) => {
                 full
               />
               <div className="form-control mt-6">
-                <button className="btn btn-primary" onClick={onEdit}>
-                  Salvar Edição
+                <button
+                  disabled={loading}
+                  className="btn btn-primary"
+                  onClick={onEdit}
+                >
+                  {loading ? (
+                    <progress className="progress progress-info w-56"></progress>
+                  ) : (
+                    "Salvar Edição"
+                  )}
                 </button>
               </div>
             </div>

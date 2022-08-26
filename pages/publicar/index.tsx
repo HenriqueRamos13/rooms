@@ -16,6 +16,8 @@ import TextArea from "../../src/components/TextArea";
 import { BENEFITS } from "../../src/utils/benefits";
 import { prisma } from "../../src/utils/lib/prisma";
 import { ToastContainer, toast } from "react-toastify";
+import { useRouter } from "next/router";
+import getStripe from "../../src/utils/get-stripjs";
 
 export async function getServerSideProps(context: NextPageContext) {
   const {
@@ -141,6 +143,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
     user: userContext,
     token: tokenContext,
   } = useAuth();
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
 
   const getMyHouses = async () => {
     const res = await fetch("/api/house/my-houses", {
@@ -200,24 +204,6 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
     }
   }, [userContext]);
 
-  const onSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const form = new FormData(e.target as HTMLFormElement);
-    const formData = Object.fromEntries(form.entries());
-
-    const res = await fetch("/api/user/create", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(formData),
-    });
-
-    const data = await res.json();
-    console.log(data);
-  };
-
   const handleStep = (v: number) => {
     if (step + v < 0 || step + v > steps.length - 1) return;
 
@@ -226,6 +212,8 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
 
   const handleCreate = async () => {
     const roomPhotos: any[] = [];
+
+    setLoading(true);
 
     for (const photo of roomImages) {
       const data = new FormData();
@@ -238,6 +226,12 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
         .then((res) => res.json())
         .then((data) => {
           roomPhotos.push(data.secure_url);
+        })
+        .catch((err) => {
+          setLoading(false);
+          return toast("Ocorreu um erro, tente novamente.", {
+            type: "error",
+          });
         });
     }
 
@@ -255,6 +249,12 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
           .then((res) => res.json())
           .then((data) => {
             housePhotos.push(data.secure_url);
+          })
+          .catch((err) => {
+            setLoading(false);
+            return toast("Ocorreu um erro, tente novamente.", {
+              type: "error",
+            });
           });
       }
 
@@ -279,6 +279,13 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
       const {
         data: { house: idHouse },
       } = dataHouse;
+
+      if (dataHouse.message) {
+        setLoading(false);
+        return toast("Ocorreu um erro ao criar a casa, tente novamente.", {
+          type: "error",
+        });
+      }
 
       // ROOM
 
@@ -307,11 +314,39 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
       const { success, message, id, data } = dataRoom;
 
       if (id) {
-        alert(id);
+        toast(
+          "Quarto criado com sucesso! Você será redirecionado para a página de pagamento em instantes.",
+          {
+            type: "success",
+          }
+        );
+
+        const stripe = await getStripe();
+
+        const { error } = await stripe!.redirectToCheckout({
+          sessionId: id,
+        });
+
+        if (error) {
+          return toast(
+            "Ocorreu um erro ao gerar o link de pagamento na Strip. Tente novamente.",
+            { type: "error" }
+          );
+        }
       } else if (success && data) {
-        alert(data.url);
+        toast("Quarto criado com sucesso!", {
+          type: "success",
+        });
+
+        router.replace(`/quarto/${data.url}`);
       } else {
-        alert(message);
+        setLoading(false);
+        toast(
+          message || "Ocorreu um erro ao criar o quarto, tente novamente.",
+          {
+            type: "error",
+          }
+        );
       }
     } else {
       const resRoom = await fetch("/api/room/create", {
@@ -339,15 +374,39 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
       const { success, message, id, data } = dataRoom;
 
       if (id) {
-        alert(id);
-        // toast("Link do quarto copiado com sucesso!", {
-        //   type: "success",
-        //   position: "bottom-center",
-        // });
+        toast(
+          "Quarto criado com sucesso! Você será redirecionado para a página de pagamento em instantes.",
+          {
+            type: "success",
+          }
+        );
+
+        const stripe = await getStripe();
+
+        const { error } = await stripe!.redirectToCheckout({
+          sessionId: id,
+        });
+
+        if (error) {
+          return toast(
+            "Ocorreu um erro ao gerar o link de pagamento na Strip. Tente novamente.",
+            { type: "error" }
+          );
+        }
       } else if (success && data) {
-        alert(data.url);
+        toast("Quarto criado com sucesso!", {
+          type: "success",
+        });
+
+        router.replace(`/quarto/${data.url}`);
       } else {
-        alert(message);
+        setLoading(false);
+        toast(
+          message || "Ocorreu um erro ao criar o quarto, tente novamente.",
+          {
+            type: "error",
+          }
+        );
       }
     }
   };
@@ -664,8 +723,13 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                           <button
                             className="btn btn-primary my-4"
                             onClick={handleCreate}
+                            disabled={loading}
                           >
-                            Publicar e pagar
+                            {loading ? (
+                              <progress className="progress progress-info w-56"></progress>
+                            ) : (
+                              "Publicar e pagar"
+                            )}
                           </button>
                         </div>
                       </div>

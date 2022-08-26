@@ -38,6 +38,7 @@ model Room {
   url         String    @unique
   payed_in    DateTime? @updatedAt @db.Timestamp
   title       String
+  clicks      Int       @default(0)
 
   images Image[]
 
