@@ -150,7 +150,7 @@ const RoomCard: React.FC<Props> = ({
             </div>
 
             {whatsapp ? (
-              <WhatsappButton number={number} url={`${URL}/quarto/${url}`} />
+              <WhatsappButton number={whatsapp} url={`${URL}/quarto/${url}`} />
             ) : (
               <p>
                 Número de contato: <b>{number}</b>

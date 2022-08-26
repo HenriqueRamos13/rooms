@@ -391,7 +391,12 @@ const BaseLayout: React.FC<Props> = ({ children }) => {
               <span className="block sm:inline">
                 &copy; 2021 Tailwind Labs Inc.
               </span>{" "}
-              <span className="block sm:inline">All rights reserved.</span>
+              <span
+                className="block sm:inline link"
+                onClick={() => router.push("/legal")}
+              >
+                All rights reserved.
+              </span>
             </div>
           </div>
         </footer>

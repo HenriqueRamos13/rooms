@@ -76,6 +76,7 @@ export interface RoomInterface {
   free: boolean;
   expenses: boolean;
   clicks?: number;
+  benefits?: string[];
 }
 
 interface Props {

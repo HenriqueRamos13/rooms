@@ -131,6 +131,10 @@ const BENEFITS = [
     id: "33",
     name: "🏙 Possui Terraço",
   },
+  {
+    id: "34",
+    name: "🧣 Camas com mantas",
+  },
 ];
 
 export { BENEFITS };
