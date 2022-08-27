@@ -54,7 +54,7 @@ export default async function handler(
 
       return res.status(200).json({
         rooms: rooms.map((room) => ({
-          images: room.house.images
+          images: room.images
             .map((image) => image.url)
             .concat(room.house.images.map((image) => image.url)),
           title: `${room.house.street}, ${room.house.neighborhood} - ${room.house.city}`,

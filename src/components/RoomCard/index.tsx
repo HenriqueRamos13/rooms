@@ -1,4 +1,11 @@
-import { HeartIcon, ShareIcon } from "@heroicons/react/solid";
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  HeartIcon,
+  ShareIcon,
+} from "@heroicons/react/solid";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { RoomInterface } from "../../../pages";
@@ -19,11 +26,15 @@ interface PropsBtn {
   children: React.ReactNode;
 }
 
-const ButtonImage: React.FC<PropsBtn> = ({ onClick, className, children }) => {
+export const ButtonImage: React.FC<PropsBtn> = ({
+  onClick,
+  className,
+  children,
+}) => {
   return (
     <button
       className={classNames(
-        "w-[30px] h-[30px] bg-gray-300 rounded-full absolute bg-opacity-40 text-black",
+        "w-[30px] h-[35px] bg-gray-400 rounded-full absolute bg-opacity-40 text-black",
         className
       )}
       onClick={onClick}
@@ -48,7 +59,7 @@ const RoomCard: React.FC<Props> = ({
   onClick,
 }) => {
   const [showShareButton, setShowShareButton] = useState(false);
-  const [image, setImage] = useState(images[0]);
+  // const [image, setImage] = useState<any>(images[0]);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -64,14 +75,14 @@ const RoomCard: React.FC<Props> = ({
   const slide = (v: number) => {
     if (index + v > images.length - 1) {
       const index = 0;
-      setImage(images[index]);
+      // setImage(Object.assign("", images[index]));
       setIndex(index);
     } else if (index + v < 0) {
       const index = images.length - 1;
-      setImage(images[index]);
+      // setImage(Object.assign("", images[index]));
       setIndex(images.length - 1);
     } else {
-      setImage(images[index + v]);
+      // setImage(Object.assign("", images[index + v]));
       setIndex(index + v);
     }
   };
@@ -79,21 +90,27 @@ const RoomCard: React.FC<Props> = ({
   return (
     <div className="grid grid-cols-1 gap-1 md:gap-4 md:grid-cols-3">
       <div className="grid col-span-1 rounded-lg relative">
-        {image && (
+        {index > -1 && (
           <Image
-            src={image}
-            alt="Room 1"
+            src={images[index]}
+            alt={"Room " + index}
             layout="responsive"
             width={400}
             height={400}
             className="rounded-lg"
           />
         )}
-        <ButtonImage className="top-[45%] left-2" onClick={() => slide(-1)}>
-          &lt;
+        <ButtonImage
+          className="top-[45%] left-0 rounded-l-lg flex flex-row items-center justify-center"
+          onClick={() => slide(-1)}
+        >
+          <ChevronLeftIcon width={30} height={30} />
         </ButtonImage>
-        <ButtonImage className="top-[45%] right-2" onClick={() => slide(+1)}>
-          &gt;
+        <ButtonImage
+          className="top-[45%] right-0 rounded-r-lg flex flex-row items-center justify-center"
+          onClick={() => slide(+1)}
+        >
+          <ChevronRightIcon width={30} height={30} />
         </ButtonImage>
       </div>
       <div
