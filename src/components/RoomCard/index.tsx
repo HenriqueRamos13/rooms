@@ -42,6 +42,7 @@ const RoomCard: React.FC<Props> = ({
   price,
   url,
   title,
+  size,
   free,
   preview,
   onClick,
@@ -110,13 +111,21 @@ const RoomCard: React.FC<Props> = ({
               </div>
 
               <p className="text-sm mb-2">{description.slice(0, 161)}</p>
-              <div className="w-full flex flex-row items-center">
+
+              {/* <div className="w-full flex flex-row items-center">
                 <b className="font-bold text-black mr-2">Status: </b>
                 {free ? (
                   <p className="text-green-700">Vago</p>
                 ) : (
                   <p className="text-red-700">Atualmente arrendado</p>
                 )}
+              </div> */}
+
+              <div className="w-full flex flex-row items-center">
+                <b className="font-bold text-black mr-2">Tamanho: </b>
+                <p className="text-grey-800">
+                  {size ? `${size} m²` : "Não informado"}
+                </p>
               </div>
 
               <div className="w-full flex flex-row items-center p-2 py-2">

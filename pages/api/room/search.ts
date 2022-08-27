@@ -13,11 +13,14 @@ export default async function handler(
     try {
       const { body } = req;
 
-      const { benefits, city, neighborhood } = body;
+      const { benefits, city, neighborhood, orderBy } = body;
+
+      const [element, order] = orderBy ? orderBy.split("/") : [null, null];
 
       const rooms = await prisma.room.findMany({
         where: {
           can_post: true,
+          free: true,
           ...(city || neighborhood
             ? {
                 house: {
@@ -41,7 +44,11 @@ export default async function handler(
           images: true,
         },
         orderBy: {
-          created_at: "desc",
+          ...(element && order
+            ? {
+                [element]: order,
+              }
+            : { created_at: "desc" }),
         },
       });
 
@@ -56,6 +63,7 @@ export default async function handler(
           url: room.url,
           free: room.free,
           expenses: room.expenses,
+          size: room.size,
           number: room.number,
           whatsapp: room.whatsapp,
         })),

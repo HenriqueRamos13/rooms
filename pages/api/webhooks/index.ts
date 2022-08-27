@@ -76,7 +76,7 @@ const webhookHandler = async (req: NextApiRequest, res: NextApiResponse) => {
         });
 
         await SGRID(
-          `Olá, Seu quarto já está publicado! Você pode checar neste <a href="${process.env.URL}/quarto/${room.url}">LINK</a>`,
+          `Olá, Seu quarto já está publicado! Você pode checar neste <a href="${process.env.SITE_URL}/quarto/${room.url}">LINK</a>`,
           {
             to: user.email,
             subject: "Quarto publicado com sucesso!",

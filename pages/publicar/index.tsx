@@ -398,7 +398,9 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
           type: "success",
         });
 
-        router.replace(`/quarto/${data.url}`);
+        setLoading(false);
+
+        // router.replace(`/quarto/${data.url}`);
       } else {
         setLoading(false);
         toast(
@@ -687,18 +689,19 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                               number={number || ""}
                               whatsapp={whatsapp || ""}
                               url="123"
+                              size={room_size.toString()}
                               title={`${street}, ${neighborhood} - ${city}`}
                               preview={true}
                             />
                           </div>
-                          <Select
+                          {/* <Select
                             label="Por quanto tempo quer que o quarto fique publicado no site?"
                             onChange={(v) => setDuration(Number(v))}
                             value={duration.toString()}
                           >
                             <option value="1">1 Ano</option>
-                          </Select>
-                          <h2 className="text-2xl text-gray-800 my-4 font-bold">
+                          </Select> */}
+                          {/* <h2 className="text-2xl text-gray-800 my-4 font-bold">
                             Valor final:{" "}
                             {(() => {
                               if (duration === 1) {
@@ -718,7 +721,7 @@ const PostRoom: NextPage<Props> = ({ user, token }) => {
                                 }).format(150);
                               }
                             })()}{" "}
-                          </h2>
+                          </h2> */}
                           <button
                             className="btn btn-primary my-4"
                             onClick={handleCreate}

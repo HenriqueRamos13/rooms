@@ -1,20 +1,11 @@
 import { HeartIcon, ShareIcon } from "@heroicons/react/solid";
 import Image from "next/image";
 import { useState } from "react";
+import { RoomInterface } from "../../../pages";
 import { classNames } from "../../utils/classNames";
 import Divider from "../Divider";
-import WhatsappButton from "../WhatsappButton";
 
-interface Props {
-  id: string;
-  images: string[];
-  title: string;
-  description: string;
-  number: string;
-  url: string;
-  price: string;
-  expenses: boolean;
-  free: boolean;
+interface Props extends RoomInterface {
   preview?: boolean;
   onEdit: () => void;
 }
@@ -41,13 +32,13 @@ const ButtonImage: React.FC<PropsBtn> = ({ onClick, className, children }) => {
 };
 
 const RoomCardEditable: React.FC<Props> = ({
-  id,
   description,
   expenses: expensesProp,
   images,
   number,
   price: priceProp,
   url,
+  size,
   title,
   free: freeProp,
   preview,
@@ -103,13 +94,21 @@ const RoomCardEditable: React.FC<Props> = ({
             </div>
 
             <p className="text-sm mb-2">{description.slice(0, 161)}</p>
-            <div className="w-full flex flex-row items-center">
+
+            {/* <div className="w-full flex flex-row items-center">
               <b className="font-bold text-black mr-2">Status: </b>
               {free ? (
                 <p className="text-green-700">Vago</p>
               ) : (
                 <p className="text-red-700">Vago em 2 meses</p>
               )}
+            </div> */}
+
+            <div className="w-full flex flex-row items-center">
+              <b className="font-bold text-black mr-2">Tamanho: </b>
+              <p className="text-grey-800">
+                {size ? `${size} m²` : "Não informado"}
+              </p>
             </div>
 
             <div className="w-full flex flex-row items-center p-2 py-2">

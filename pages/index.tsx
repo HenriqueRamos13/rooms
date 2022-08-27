@@ -1,11 +1,14 @@
+import { ArrowsExpandIcon } from "@heroicons/react/solid";
 import type { NextPage, NextPageContext } from "next";
 import { useRouter } from "next/router";
 import { FormEvent, useEffect, useState } from "react";
+import Checkbox from "../src/components/Checkbox";
 import Content from "../src/components/Contents/DefaultContent/Content";
 import FullWContent from "../src/components/Contents/DefaultContent/FullWContent";
 import LeftContent from "../src/components/Contents/DefaultContent/LeftContent";
 import ParentDefaultContent from "../src/components/Contents/DefaultContent/ParentDefaultContent";
 import RightContent from "../src/components/Contents/DefaultContent/RightContent";
+import Divider from "../src/components/Divider";
 import RoomCard from "../src/components/RoomCard";
 import Select from "../src/components/Select";
 import { BENEFITS } from "../src/utils/benefits";
@@ -31,6 +34,7 @@ export async function getServerSideProps(context: NextPageContext) {
   const rooms = await prisma.room.findMany({
     where: {
       can_post: true,
+      free: true,
     },
     include: {
       house: {
@@ -57,6 +61,7 @@ export async function getServerSideProps(context: NextPageContext) {
         price: Number(room.price),
         url: room.url,
         free: room.free,
+        size: Number(room.size),
         expenses: room.expenses,
         number: room.number,
         whatsapp: room.whatsapp,
@@ -73,6 +78,7 @@ export interface RoomInterface {
   whatsapp: string;
   url: string;
   price: string;
+  size?: string;
   free: boolean;
   expenses: boolean;
   clicks?: number;
@@ -89,6 +95,8 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
   const [city, setCity] = useState("");
   const [neighborhood, setNeighborhood] = useState("");
   const [benefits, setBenefits] = useState<string[]>([]);
+  const [collapseFilter, setCollapseFilter] = useState(false);
+  const [orderBy, setOrderBy] = useState("created_at/desc");
 
   const getRooms = async () => {
     const res = await fetch("/api/room/search", {
@@ -101,6 +109,7 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
         ...(neighborhood && { neighborhood }),
         // ...(benefits.length > 0 && { benefits }),
         benefits,
+        ...(orderBy && { orderBy }),
       }),
     });
 
@@ -110,6 +119,12 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
       setRooms(Object.assign([], [...data.rooms]));
     }
   };
+
+  useEffect(() => {
+    if (orderBy !== "") {
+      getRooms();
+    }
+  }, [orderBy]);
 
   useEffect(() => {
     if (city !== "") {
@@ -149,6 +164,24 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
   //   const data = await res.json();
   //   console.log(data);
   // };
+
+  const OrderBy = () => {
+    return (
+      <Select
+        label="Ordenar por"
+        value={orderBy}
+        onChange={(v) => setOrderBy(v)}
+      >
+        <option value="created_at/desc">Selecione</option>
+        <option value="price/asc">Menor valor</option>
+        <option value="price/desc">Maior valor</option>
+        <option value="created_at/asc">Publicados primeiro</option>
+        <option value="created_at/desc">Publicados recentemente</option>
+        <option value="size/asc">Menor quarto</option>
+        <option value="size/desc">Maior quarto</option>
+      </Select>
+    );
+  };
 
   return (
     <>
@@ -192,9 +225,44 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
         </FullWContent>
         <div className="block lg:hidden">
           <FullWContent>
-            <Content title="Filtros" boldTitle>
+            <div className="rounded-lg bg-white overflow-hidden shadow p-4">
+              <h2
+                className={classNames(
+                  "p-0 m-0 text-black font-bold text-2xl flex flex-row items-center"
+                )}
+                onClick={() => setCollapseFilter(!collapseFilter)}
+              >
+                Filtros{" "}
+                {collapseFilter ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={3}
+                    stroke="currentColor"
+                    className="shadow-sm border rounded-md bg-red-300 w-[30px] h-[30px] ml-2"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25"
+                    />
+                  </svg>
+                ) : (
+                  <ArrowsExpandIcon
+                    width={30}
+                    height={30}
+                    className="shadow-sm border rounded-md bg-green-300 ml-2"
+                    strokeWidth={0.5}
+                  />
+                )}
+              </h2>
+              <Divider />
+
               <div className="columns-auto">
-                {BENEFITS.map((e) => (
+                <OrderBy />
+                <div className="py-4"></div>
+                {BENEFITS.slice(0, 10).map((e) => (
                   <div
                     key={e.id}
                     className={classNames(
@@ -218,7 +286,31 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
                   </div>
                 ))}
               </div>
-            </Content>
+              {collapseFilter &&
+                BENEFITS.slice(10, -1).map((e) => (
+                  <div
+                    key={e.id}
+                    className={classNames(
+                      "badge cursor-pointer mx-2 my-2 badge-lg",
+                      benefits.indexOf(e.id) > -1 ? "badge-success" : ""
+                    )}
+                    onClick={() => {
+                      if (benefits.indexOf(e.id) > -1) {
+                        setBenefits(
+                          Object.assign(
+                            [],
+                            [...benefits.filter((f) => f !== e.id)]
+                          )
+                        );
+                      } else {
+                        setBenefits(Object.assign([], [...benefits, e.id]));
+                      }
+                    }}
+                  >
+                    {e.name}
+                  </div>
+                ))}
+            </div>
           </FullWContent>
         </div>
         <LeftContent>
@@ -235,8 +327,10 @@ const Home: NextPage<Props> = ({ rooms: serverRooms }) => {
         </LeftContent>
         <div className="hidden lg:block">
           <RightContent>
-            <Content title="Filtros">
+            <Content title="Filtros" boldTitle>
               <div className="columns-auto">
+                <OrderBy />
+                <div className="py-4"></div>
                 {BENEFITS.map((e) => (
                   <div
                     key={e.id}

@@ -150,7 +150,6 @@ const Home: NextPage = ({}) => {
             rooms.map((room) => (
               <Content key={room.url!}>
                 <RoomCardEditable
-                  id="1"
                   {...room}
                   onEdit={() =>
                     setModal({

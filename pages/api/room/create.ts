@@ -129,8 +129,8 @@ export default async function handler(
             },
             // customer_email: userData?.email,
             mode: "payment",
-            success_url: `${process.env.URL}/quarto/${url}?status=success&session_id={CHECKOUT_SESSION_ID}`,
-            cancel_url: `${process.env.URL}/publicar?status=cancel&session_id={CHECKOUT_SESSION_ID}`,
+            success_url: `${process.env.SITE_URL}/quarto/${url}?status=success&session_id={CHECKOUT_SESSION_ID}`,
+            cancel_url: `${process.env.SITE_URL}/publicar?status=cancel&session_id={CHECKOUT_SESSION_ID}`,
           };
 
           const session: Stripe.Checkout.Session =

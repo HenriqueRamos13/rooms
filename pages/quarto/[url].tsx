@@ -15,13 +15,14 @@ export async function getStaticPaths(context: NextPageContext) {
   const rooms = await prisma.room.findMany({
     where: {
       can_post: true,
+      free: true,
     },
   });
 
   const paths = rooms.map((room) => {
     return {
       params: {
-        // url: `${process.env.URL}/quarto/${room.url}`,
+        // url: `${process.env.SITE_URL}/quarto/${room.url}`,
         url: `${room.url}`,
       },
     };
@@ -45,6 +46,7 @@ export async function getStaticProps({
   const room = await prisma.room.findFirst({
     where: {
       url: url,
+      free: true,
     },
     include: {
       house: {
